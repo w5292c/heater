@@ -14,4 +14,6 @@
         return val; \
     }
 
+#define M_FLASH
+
 #endif /**/
