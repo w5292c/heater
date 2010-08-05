@@ -394,7 +394,7 @@ mubyte get_font14_byte (mubyte aChar, mubyte aLine) {
     muword index;
 
     m_return_val_if_fail (aChar >= 32, 0);
-    m_return_val_if_fail (aChar <= 126, 0 || (aChar >= 160 && aChar <= 255));
+    m_return_val_if_fail (aChar <= 126 || (aChar >= 160 && aChar <= 255), 0);
     m_return_val_if_fail (aLine < 14, 0);
 
     if (aChar < 128) {
