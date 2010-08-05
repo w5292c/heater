@@ -1,1 +1,1 @@
-Makefile.pc
+Makefile.avr
