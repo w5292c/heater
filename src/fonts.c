@@ -1,9 +1,11 @@
 #include "fonts.h"
 #include "macros.h"
 
-/*
-*/
-static mubyte M_FLASH TheFont14[] = {
+#ifndef M_PC
+#include <avr/pgmspace.h>
+#endif
+
+static mubyte TheFont14[] M_FLASH = {
 	/** Character code: 32; character name: <SPACE> */
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	/** Character code: 33; character name: <EXCLAMATION MARK> */
@@ -391,13 +393,22 @@ static mubyte M_FLASH TheFont14[] = {
 mubyte get_font14_byte (mubyte aChar, mubyte aLine) {
     muword index;
 
-    m_return_val_if_fail (aChar > 31, 0);
-    m_return_val_if_fail (aChar < 128, 0);
+    m_return_val_if_fail (aChar >= 32, 0);
+    m_return_val_if_fail (aChar <= 126, 0 || (aChar >= 160 && aChar <= 255));
     m_return_val_if_fail (aLine < 14, 0);
 
-    aChar -= 32;
+    if (aChar < 128) {
+        aChar -= 32;
+    }
+    else {
+        aChar -= (160 - (127 - 32));
+    }
 
     index = ((muword)aChar)*14 + aLine;
 
+#ifdef M_PC
     return TheFont14[index];
+#else
+    return pgm_read_byte (&TheFont14[index]);
+#endif
 }

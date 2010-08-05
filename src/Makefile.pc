@@ -1,0 +1,16 @@
+TARGET_FORMAT=exe
+
+TARGET_ELF=test
+TARGET_FILENAME=$(TARGET_ELF)
+
+all: $(TARGET_ELF)
+
+$(TARGET_ELF): liblcd.o main.c
+	gcc $(CFLAGS) -DM_PC main.c liblcd.o -o $(TARGET_ELF)
+	strip $(TARGET_ELF)
+
+liblcd.o: config.h fonts.h macros.h types.h fonts.c
+	gcc $(CFLAGS) -DM_PC fonts.c -c -o liblcd.o
+
+clean:
+	rm *.o $(TARGET_ELF) $(TARGET_FILENAME) >/dev/null 2>&1 || true
