@@ -7,8 +7,8 @@ TARGET_FILENAME=$(TARGET_ELF)
 
 all: $(TARGET_ELF)
 
-$(TARGET_ELF): liblcd.o lcd-driver.o main-pc.c
-	gcc $(MCFLAGS) main-pc.c liblcd.o lcd-driver.o -o $(TARGET_ELF)
+$(TARGET_ELF): liblcd.o lcd-driver.o hw-iface.o main-pc.c
+	gcc $(MCFLAGS) main-pc.c liblcd.o lcd-driver.o hw-iface.o -o $(TARGET_ELF)
 	strip $(TARGET_ELF)
 
 liblcd.o: config.h fonts.h macros.h types.h fonts.c
@@ -16,6 +16,9 @@ liblcd.o: config.h fonts.h macros.h types.h fonts.c
 
 lcd-driver.o: lcd-driver.c lcd-driver.h
 	gcc $(MCFLAGS) lcd-driver.c -c -o lcd-driver.o
+
+hw-iface.o: hw-iface.c hw-iface.h
+	gcc $(MCFLAGS) hw-iface.c -c -o hw-iface.o
 
 clean:
 	rm *.o $(TARGET_ELF) $(TARGET_FILENAME) >/dev/null 2>&1 || true

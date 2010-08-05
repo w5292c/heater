@@ -18,8 +18,8 @@ all: $(TARGET_FILENAME)
 $(TARGET_FILENAME): $(TARGET_ELF)
 	avr-objcopy -O $(TARGET_FORMAT) $(TARGET_ELF) $(TARGET_FILENAME)
 
-test: liblcd.o lcd-driver.o main-avr.c
-	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) main-avr.c liblcd.o lcd-driver.o -o test
+test: liblcd.o lcd-driver.o hw-iface.o main-avr.c
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) main-avr.c liblcd.o lcd-driver.o hw-iface.o -o test
 	avr-strip $(TARGET_ELF)
 
 liblcd.o: config.h fonts.h macros.h types.h fonts.c
@@ -27,6 +27,9 @@ liblcd.o: config.h fonts.h macros.h types.h fonts.c
 
 lcd-driver.o: lcd-driver.c lcd-driver.h
 	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) lcd-driver.c -c -o lcd-driver.o
+
+hw-iface.o: hw-iface.c hw-iface.h
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) hw-iface.c -c -o hw-iface.o
 
 clean:
 	rm *.o $(TARGET_ELF) $(TARGET_FILENAME) >/dev/null 2>&1 || true
