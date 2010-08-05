@@ -214,6 +214,22 @@ void lcd_print_char (uint8_t aX, uint8_t aY, uint8_t aChar) {
     }
 }
 
+void lcd_paint_char (uint8_t aX, uint8_t aY, uint8_t aChar) {
+    uint8_t x;
+    uint8_t y;
+
+    for (y = 0; y < 14; y++) {
+        mubyte image;
+
+        image = get_font14_byte (aChar, y);
+        for (x = 0; x < 8; x++) {
+            if ((1 << x) & image) {
+                lcd_set_pixel (aX + 7 - x, y + aY, TRUE);
+            }
+        }
+    }
+}
+
 void lcd_set_pixel (uint8_t aX, uint8_t aY, uint8_t aValue) {
     uint8_t bit_mask;
 

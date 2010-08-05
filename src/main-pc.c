@@ -13,11 +13,11 @@ int main (int argn, char **argv) {
 
     uint8_t sh = 7;
     lcd_print_char (0 + sh, 1, 'H');
-    lcd_print_char (8 + sh, 1, 'e');
+    lcd_paint_char (8 + sh, 1, 'e');
     lcd_print_char (16 + sh, 1, 'l');
-    lcd_print_char (24 + sh, 1, 'l');
+    lcd_paint_char (24 + sh, 1, 'l');
     lcd_print_char (32 + sh, 1, 'o');
-    lcd_print_char (40 + sh, 1, '!');
+    lcd_paint_char (40 + sh, 1, '!');
     lcd_set_pixel (0, 0, TRUE);
     lcd_set_pixel (0, 15, TRUE);
     lcd_set_pixel (60, 0, TRUE);
