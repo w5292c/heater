@@ -194,12 +194,7 @@ void lcd_print_char (uint8_t aX, uint8_t aY, uint8_t aChar) {
             uint8_t mask;
 
             mask = (1 << x);
-            if (mask & image) {
-                lcd_set_pixel (aX + 7 - x, y + aY, TRUE);
-            }
-            else {
-                lcd_set_pixel (x + aX, y + aY, FALSE);
-            }
+            lcd_set_pixel (aX + 7 - x, y + aY, mask & image);
         }
     }
 }
@@ -210,23 +205,25 @@ void lcd_set_pixel (uint8_t aX, uint8_t aY, uint8_t aValue) {
     m_return_if_fail (aX < 61);
     m_return_if_fail (aY < 16);
 
+    aX = 60 - aX;
+
     bit_mask = (1 << (aY & 0x07U));
     if (aY & 0x08U) {
         /* 2-nd bank */
         if (aValue) {
-            TheDisplayBank2[60 - aX] = TheDisplayBank2[60 - aX] | bit_mask;
+            TheDisplayBank2[aX] = TheDisplayBank2[aX] | bit_mask;
         }
         else {
-            TheDisplayBank2[60 - aX] = TheDisplayBank2[60 - aX] & ~bit_mask;
+            TheDisplayBank2[aX] = TheDisplayBank2[aX] & ~bit_mask;
         }
     }
     else {
         /* 1-st bank */
         if (aValue) {
-            TheDisplayBank1[60 - aX] = TheDisplayBank1[60 - aX] | bit_mask;
+            TheDisplayBank1[aX] = TheDisplayBank1[aX] | bit_mask;
         }
         else {
-            TheDisplayBank1[60 - aX] = TheDisplayBank1[60 - aX] & ~bit_mask;
+            TheDisplayBank1[aX] = TheDisplayBank1[aX] & ~bit_mask;
         }
     }
 }
