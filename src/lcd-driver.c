@@ -1,5 +1,6 @@
 #include "lcd-driver.h"
 
+#include "fonts.h"
 #include "macros.h"
 
 #ifdef M_PC
@@ -88,18 +89,13 @@ static inline void lcd_reset (void) { lcd_write_byte (TRUE, 0xE2U); }
 #define M_LCD_WIDTH (61)
 #define M_LCD_HEIGHT (16)
 #define M_LCD_RAM (M_LCD_WIDTH*M_LCD_HEIGHT/8)
+#define M_LCD_BANK_LENGTH M_LCD_WIDTH
+
 /**
- * Internal buffer for a 61X16 dot display
- * The buffer contains butmap in the following format:
- *     Raw:    00    01    02    03    04    05     X      X     X    60
- * Line 00: <000> <001> <002> <003> <004> <005> <xxx>  <xxx> <xxx> <060>
- * Line 01: <060> <061> <062> <063> <064> <065> <xxx>  <xxx> <xxx> <060>
- * Line 02:
- * Line 03:
- * X X X
- * Line 15:
+ * These buffers correspond to the real RAM buffers in the LCD module
  */
-static uint8_t TheDisplayBuffer[M_LCD_RAM];
+static uint8_t TheDisplayBank1[M_LCD_BANK_LENGTH];
+static uint8_t TheDisplayBank2[M_LCD_BANK_LENGTH];
 
 void lcd_init (void) {
     /* после подачи напряжения питания удерживать вывод RES
@@ -146,25 +142,93 @@ void lcd_flash (void) {
 void lcd_clear (void) {
     uint8_t i;
 
-    for (i = 0; i < M_LCD_RAM; i++) {
-        TheDisplayBuffer[i] = 0;
+    for (i = 0; i < M_LCD_BANK_LENGTH; i++) {
+        TheDisplayBank1[i] = 0;
+        TheDisplayBank2[i] = 0;
+    }
+}
+
+void lcd_debug_show_buffer (void) {
+    uint8_t y;
+    uint16_t x;
+    uint8_t bank;
+
+    for (bank = 0; bank < 2; bank++) {
+        for (y = 0; y < 8; y++) {
+            uint8_t bit_mask;
+
+            bit_mask = (1 << y);
+            printf ("[");
+            for (x = 0; x < 61; x++) {
+                if (0 == bank) {
+                    if (bit_mask & TheDisplayBank1[60 - x]) {
+                        printf ("XX");
+                    }
+                    else {
+                        printf ("  ");
+                    }
+                }
+                else {
+                    if (bit_mask & TheDisplayBank2[60 - x]) {
+                        printf ("XX");
+                    }
+                    else {
+                        printf ("  ");
+                    }
+                }
+            }
+            printf ("]\n");
+        }
     }
 }
 
 void lcd_print_char (uint8_t aX, uint8_t aY, uint8_t aChar) {
-    M_UNUSED_PARAM (aX);
-    M_UNUSED_PARAM (aY);
-    M_UNUSED_PARAM (aChar);
+    uint8_t x;
+    uint8_t y;
 
-    printf ("Printing: [%c] at (%d, %d)\n", aChar, aX, aY);
+    for (y = 0; y < 14; y++) {
+        mubyte image;
+
+        image = get_font14_byte (aChar, y);
+        for (x = 0; x < 8; x++) {
+            uint8_t mask;
+
+            mask = (1 << x);
+            if (mask & image) {
+                lcd_set_pixel (aX + 7 - x, y + aY, TRUE);
+            }
+            else {
+                lcd_set_pixel (x + aX, y + aY, FALSE);
+            }
+        }
+    }
 }
 
 void lcd_set_pixel (uint8_t aX, uint8_t aY, uint8_t aValue) {
-    M_UNUSED_PARAM (aX);
-    M_UNUSED_PARAM (aY);
-    M_UNUSED_PARAM (aValue);
+    uint8_t bit_mask;
 
-    printf ("Setting pixel: [%s] at (%d, %d)\n", aValue ? "ON" : "OFF", aX, aY);
+    m_return_if_fail (aX < 61);
+    m_return_if_fail (aY < 16);
+
+    bit_mask = (1 << (aY & 0x07U));
+    if (aY & 0x08U) {
+        /* 2-nd bank */
+        if (aValue) {
+            TheDisplayBank2[60 - aX] = TheDisplayBank2[60 - aX] | bit_mask;
+        }
+        else {
+            TheDisplayBank2[60 - aX] = TheDisplayBank2[60 - aX] & ~bit_mask;
+        }
+    }
+    else {
+        /* 1-st bank */
+        if (aValue) {
+            TheDisplayBank1[60 - aX] = TheDisplayBank1[60 - aX] | bit_mask;
+        }
+        else {
+            TheDisplayBank1[60 - aX] = TheDisplayBank1[60 - aX] & ~bit_mask;
+        }
+    }
 }
 
 static void lcd_write_byte (uint8_t aCommand, uint8_t aByte) {
