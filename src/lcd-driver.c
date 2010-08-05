@@ -137,6 +137,21 @@ void lcd_deinit (void) {
 }
 
 void lcd_flash (void) {
+    uint8_t i;
+
+    /* send our local buffers to the LCD module, the first buffer first */
+    lcd_set_page (0);
+    lcd_set_address (0);
+    for (i = 0; i < M_LCD_BANK_LENGTH; i++) {
+        lcd_write_byte (FALSE, TheDisplayBank1[i]);
+    }
+
+    /* and the other one the second */
+    lcd_set_page (1);
+    lcd_set_address (0);
+    for (i = 0; i < M_LCD_BANK_LENGTH; i++) {
+        lcd_write_byte (FALSE, TheDisplayBank2[i]);
+    }
 }
 
 void lcd_clear (void) {
