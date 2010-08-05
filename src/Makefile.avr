@@ -16,8 +16,8 @@ all: $(TARGET_FILENAME)
 $(TARGET_FILENAME): $(TARGET_ELF)
 	avr-objcopy -O $(TARGET_FORMAT) $(TARGET_ELF) $(TARGET_FILENAME)
 
-test: liblcd.o main.c
-	avr-gcc -DM_AVR -mmcu=$(MCPU) main.c liblcd.o -o test
+test: liblcd.o main-avr.c
+	avr-gcc -DM_AVR -mmcu=$(MCPU) main-avr.c liblcd.o -o test
 	avr-strip $(TARGET_ELF)
 
 liblcd.o: config.h fonts.h macros.h types.h fonts.c
