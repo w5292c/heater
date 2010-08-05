@@ -1,5 +1,7 @@
 MCPU=atmega32
 
+MCFLAGS=-DF_CPU=20000000UL -DM_AVR -O3 -Wall -Werror -Wextra
+
 #TARGET_FORMAT=ihex
 TARGET_FORMAT=binary
 
@@ -16,12 +18,18 @@ all: $(TARGET_FILENAME)
 $(TARGET_FILENAME): $(TARGET_ELF)
 	avr-objcopy -O $(TARGET_FORMAT) $(TARGET_ELF) $(TARGET_FILENAME)
 
-test: liblcd.o main-avr.c
-	avr-gcc -DM_AVR -mmcu=$(MCPU) main-avr.c liblcd.o -o test
+test: liblcd.o lcd-driver.o main-avr.c
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) main-avr.c liblcd.o lcd-driver.o -o test
 	avr-strip $(TARGET_ELF)
 
 liblcd.o: config.h fonts.h macros.h types.h fonts.c
-	avr-gcc -DM_AVR -mmcu=$(MCPU) fonts.c -c -o liblcd.o
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) fonts.c -c -o liblcd.o
+
+lcd-driver.o: lcd-driver.c lcd-driver.h
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) lcd-driver.c -c -o lcd-driver.o
 
 clean:
 	rm *.o $(TARGET_ELF) $(TARGET_FILENAME) >/dev/null 2>&1 || true
+
+clean-source:
+	rm *~

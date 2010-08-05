@@ -31,4 +31,9 @@
 #define M_FLASH PROGMEM
 #endif
 
+#define TRUE (1)
+#define FALSE (0)
+
+#define M_UNUSED_PARAM(param) (void)param
+
 #endif /* __AVR_LCD_PROJECT_MACROS_H__ */

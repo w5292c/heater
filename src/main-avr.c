@@ -1,8 +1,12 @@
 #include "fonts.h"
+#include "macros.h"
 
 #include <avr/io.h>
 
-int main (char **argv, int argn) {
+int main (int argn, char **argv) {
+    M_UNUSED_PARAM (argn);
+    M_UNUSED_PARAM (argv);
+
     muword i, j;
     for (i = 0; i < 14; i++) {
         mubyte bt = get_font14_byte (126, i);
