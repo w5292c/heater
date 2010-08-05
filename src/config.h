@@ -1,7 +1,7 @@
 #ifndef __AVR_LCD_PROJECT_CONFIG_H__
 #define __AVR_LCD_PROJECT_CONFIG_H__
 
-#if 1
+#ifdef M_PC
 /**
  * Uncomment this to enable debug logging
  */
