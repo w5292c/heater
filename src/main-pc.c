@@ -11,6 +11,7 @@ int main (int argn, char **argv) {
     lcd_init ();
     lcd_clear ();
 
+    lcd_set_pixel (50, 8, TRUE);
     lcd_print_char (0, 0, 'F');
     lcd_flash ();
 
@@ -24,6 +25,10 @@ int main (int argn, char **argv) {
             }
         }
     }
+
+    lcd_deinit ();
+    return 0;
+}
 
 #if 0
     do {
@@ -51,7 +56,3 @@ int main (int argn, char **argv) {
     }
     while (1);
 #endif
-
-    lcd_deinit ();
-    return 0;
-}

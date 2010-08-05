@@ -2,7 +2,9 @@
 
 #include "macros.h"
 
+#ifdef M_PC
 #include <stdio.h>
+#endif
 #ifdef M_AVR
 #include <util/delay.h>
 #endif
@@ -150,18 +152,32 @@ void lcd_clear (void) {
 }
 
 void lcd_print_char (uint8_t aX, uint8_t aY, uint8_t aChar) {
+    M_UNUSED_PARAM (aX);
+    M_UNUSED_PARAM (aY);
+    M_UNUSED_PARAM (aChar);
+
     printf ("Printing: [%c] at (%d, %d)\n", aChar, aX, aY);
 }
 
+void lcd_set_pixel (uint8_t aX, uint8_t aY, uint8_t aValue) {
+    M_UNUSED_PARAM (aX);
+    M_UNUSED_PARAM (aY);
+    M_UNUSED_PARAM (aValue);
+
+    printf ("Setting pixel: [%s] at (%d, %d)\n", aValue ? "ON" : "OFF", aX, aY);
+}
+
 static void lcd_write_byte (uint8_t aCommand, uint8_t aByte) {
+    M_UNUSED_PARAM (aByte);
+
     /* wait until the LCD module is ready */
     while (0x80U & lcd_read_status ()) {}
 
     if (aCommand) {
-        printf ("Writing a command byte: 0x%x\n", aByte);
+        printf ("Writing a command byte: 0x%2.2x\n", aByte);
     }
     else {
-        printf ("Writing a data byte: 0x%x\n", aByte);
+        printf ("Writing a data byte: 0x%2.2x\n", aByte);
     }
 }
 
@@ -175,5 +191,7 @@ static uint8_t lcd_read_byte (uint8_t aCommand) {
 }
 
 static void lcd_set_reset_pin (uint8_t aOn) {
+    M_UNUSED_PARAM (aOn);
+
     printf ("Changing RESET pin: [%d]\n", aOn);
 }

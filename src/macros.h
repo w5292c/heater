@@ -38,11 +38,18 @@
 
 #ifdef M_PC
 /**
- * Dummy definitions
+ * Dummy PC definitions
  */
- #include <unistd.h>
+#include <unistd.h>
 #define _delay_us(arg) usleep (arg)
 #define _delay_ms(arg) usleep (arg*1000)
+#endif
+#ifdef M_AVR
+/**
+ * Dummy AVR definitions
+ */
+#define printf(...)
+#define printf(...)
 #endif
 
 #endif /* __AVR_LCD_PROJECT_MACROS_H__ */

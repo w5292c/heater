@@ -14,6 +14,11 @@ int main (int argn, char **argv) {
     lcd_print_char (0, 0, 'F');
     lcd_flash ();
 
+    lcd_deinit ();
+    return 0;
+}
+
+#if 0
     muword i, j;
     for (i = 0; i < 14; i++) {
         mubyte bt = get_font14_byte (126, i);
@@ -24,7 +29,4 @@ int main (int argn, char **argv) {
             }
         }
     }
-
-    lcd_deinit ();
-    return 0;
-}
+#endif
