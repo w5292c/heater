@@ -3,7 +3,9 @@
 #include "macros.h"
 
 #include <stdio.h>
+#ifdef M_AVR
 #include <util/delay.h>
+#endif
 
 /**
  * Set RESET pin of the LCD module
@@ -34,50 +36,56 @@ static inline uint8_t lcd_read_status () { return lcd_read_byte (TRUE); }
  * Turn ON/OFF display
  * @param[in] aOn FALSE - Turn ON; TRUE - Turn OFF
  */
-static void lcd_display_turn_off (uint8_t aOn);
+static void lcd_display_turn_off (uint8_t aOff) { lcd_write_byte (TRUE, 0xAEU | (0x01U & aOff)); }
 /**
  * Set the start line of the LCD module [0..31]
  * @param[in] aStartLine The start line to be set
  */
-static void lcd_set_start_line (uint8_t aStartLine);
+static void lcd_set_start_line (uint8_t aStartLine)
+{ lcd_write_byte (TRUE, 0xC0U | (aStartLine & 0x1FU)); }
 /**
  * Set the current page [0..3]
  * @param[in] aPage The page to be set
  */
-static void lcd_set_page (uint8_t aPage);
+static void lcd_set_page (uint8_t aPage) { lcd_write_byte (TRUE, 0xACU | (aPage & 0x03U)); }
 /**
  * Set the current address
  * @param[in] aAddress The address to be set
  */
-static void lcd_set_address (uint8_t aAddress);
+static void lcd_set_address (uint8_t aAddress) { lcd_write_byte (TRUE, aAddress & 0x7FU); }
 /**
  * Set ADC flag
  * @param[in] aAdc 0 - forward scan, 1 - backward scan
  */
-static void lcd_select_adc (uint8_t aAdc);
+static void lcd_select_adc (uint8_t aAdc) { lcd_write_byte (TRUE, 0xA0U | (aAdc & 0x01U)); }
 /**
  * Turn ON/OFF static (power-saving) mode
  * @param[in] aStatic TRUE - turn ON static mode, FALSE - turn OFF static mode
  */
-static void lcd_set_static_mode (uint8_t aStatic);
+static void lcd_set_static_mode (uint8_t aStatic)
+{ lcd_write_byte (TRUE, 0xA4U | (aStatic & 0x01U)); }
 /**
  * Select duty for the LCD module
  * @param[in] aDuty Should be used '0'
  */
-static void lcd_select_duty (uint8_t aDuty);
+static void lcd_select_duty (uint8_t aDuty) { lcd_write_byte (TRUE, 0xA8U | (aDuty & 0x01U)); }
 /**
  * Start read-modify mode
  */
-static void lcd_read_modify_start (void);
+static void lcd_read_modify_start (void) { lcd_write_byte (TRUE, 0xE0U); }
 /**
  * End read-modify mode
  */
-static void lcd_read_modify_end (void);
+static void lcd_read_modify_end (void) { lcd_write_byte (TRUE, 0xEEU); }
 /**
  * Reset the LCD module
  */
-static void lcd_reset (void);
+static inline void lcd_reset (void) { lcd_write_byte (TRUE, 0xE2U); }
 
+
+#define M_LCD_WIDTH (61)
+#define M_LCD_HEIGHT (16)
+#define M_LCD_RAM (M_LCD_WIDTH*M_LCD_HEIGHT/8)
 /**
  * Internal buffer for a 61X16 dot display
  * The buffer contains butmap in the following format:
@@ -89,7 +97,7 @@ static void lcd_reset (void);
  * X X X
  * Line 15:
  */
-static uint8_t TheDisplayBuffer[122];
+static uint8_t TheDisplayBuffer[M_LCD_RAM];
 
 void lcd_init (void) {
     /* после подачи напряжения питания удерживать вывод RES
@@ -117,14 +125,14 @@ void lcd_init (void) {
     /* подать команду включения дисплея (Display ON/OFF) */
     lcd_display_turn_off (FALSE);
 
+    lcd_reset ();
+    lcd_select_adc (0);
+    lcd_read_modify_start ();
+    lcd_read_modify_end ();
+
     lcd_set_start_line (0);
     lcd_set_page (0);
     lcd_set_address (0);
-    lcd_select_adc (0);
-    lcd_read_modify_start ();
-    lcd_reset ();
-
-    M_UNUSED_PARAM (TheDisplayBuffer[0]);
 }
 
 void lcd_deinit (void) {
@@ -134,50 +142,15 @@ void lcd_flash (void) {
 }
 
 void lcd_clear (void) {
+    uint8_t i;
+
+    for (i = 0; i < M_LCD_RAM; i++) {
+        TheDisplayBuffer[i] = 0;
+    }
 }
 
 void lcd_print_char (uint8_t aX, uint8_t aY, uint8_t aChar) {
-    printf ("Printing: [%c] at (%d, %d)", aChar, aX, aY);
-}
-
-static void lcd_display_turn_off (uint8_t aOff) {
-    lcd_write_byte (TRUE, 0xAEU | (0x01U & aOff));
-}
-
-static void lcd_set_start_line (uint8_t aStartLine) {
-    lcd_write_byte (TRUE, 0xC0U | (aStartLine & 0x1FU));
-}
-
-static void lcd_set_page (uint8_t aPage) {
-    lcd_write_byte (TRUE, 0xACU | (aPage & 0x03U));
-}
-
-static void lcd_set_address (uint8_t aAddress) {
-    lcd_write_byte (TRUE, aAddress & 0x7FU);
-}
-
-static void lcd_select_adc (uint8_t aAdc) {
-    lcd_write_byte (TRUE, 0xA0U | (aAdc & 0x01U));
-}
-
-static void lcd_set_static_mode (uint8_t aStatic) {
-    lcd_write_byte (TRUE, 0xA4U | (aStatic & 0x01U));
-}
-
-static void lcd_select_duty (uint8_t aDuty) {
-    lcd_write_byte (TRUE, 0xA8U | (aDuty & 0x01U));
-}
-
-static void lcd_read_modify_start (void) {
-    lcd_write_byte (TRUE, 0xE0U);
-}
-
-static void lcd_read_modify_end (void) {
-    lcd_write_byte (TRUE, 0xEEU);
-}
-
-static void lcd_reset (void) {
-    lcd_write_byte (TRUE, 0xE2U);
+    printf ("Printing: [%c] at (%d, %d)\n", aChar, aX, aY);
 }
 
 static void lcd_write_byte (uint8_t aCommand, uint8_t aByte) {
@@ -194,7 +167,7 @@ static void lcd_write_byte (uint8_t aCommand, uint8_t aByte) {
 
 static uint8_t lcd_read_byte (uint8_t aCommand) {
     if (aCommand) {
-        return 0x50;
+        return 0x40;
     }
     else {
         return 0x00;

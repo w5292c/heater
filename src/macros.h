@@ -36,4 +36,13 @@
 
 #define M_UNUSED_PARAM(param) (void)param
 
+#ifdef M_PC
+/**
+ * Dummy definitions
+ */
+ #include <unistd.h>
+#define _delay_us(arg) usleep (arg)
+#define _delay_ms(arg) usleep (arg*1000)
+#endif
+
 #endif /* __AVR_LCD_PROJECT_MACROS_H__ */

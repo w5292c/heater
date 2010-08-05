@@ -1,3 +1,5 @@
+MCFLAGS=-DM_PC -O3 -Wall -Werror -Wextra
+
 TARGET_FORMAT=exe
 
 TARGET_ELF=test
@@ -5,12 +7,15 @@ TARGET_FILENAME=$(TARGET_ELF)
 
 all: $(TARGET_ELF)
 
-$(TARGET_ELF): liblcd.o main-pc.c
-	gcc $(CFLAGS) -DM_PC main-pc.c liblcd.o -o $(TARGET_ELF)
+$(TARGET_ELF): liblcd.o lcd-driver.o main-pc.c
+	gcc $(MCFLAGS) main-pc.c liblcd.o lcd-driver.o -o $(TARGET_ELF)
 	strip $(TARGET_ELF)
 
 liblcd.o: config.h fonts.h macros.h types.h fonts.c
-	gcc $(CFLAGS) -DM_PC fonts.c -c -o liblcd.o
+	gcc $(MCFLAGS) fonts.c -c -o liblcd.o
+
+lcd-driver.o: lcd-driver.c lcd-driver.h
+	gcc $(MCFLAGS) lcd-driver.c -c -o lcd-driver.o
 
 clean:
 	rm *.o $(TARGET_ELF) $(TARGET_FILENAME) >/dev/null 2>&1 || true

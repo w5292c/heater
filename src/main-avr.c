@@ -1,11 +1,18 @@
 #include "fonts.h"
 #include "macros.h"
+#include "lcd-driver.h"
 
 #include <avr/io.h>
 
 int main (int argn, char **argv) {
     M_UNUSED_PARAM (argn);
     M_UNUSED_PARAM (argv);
+
+    lcd_init ();
+    lcd_clear ();
+
+    lcd_print_char (0, 0, 'F');
+    lcd_flash ();
 
     muword i, j;
     for (i = 0; i < 14; i++) {
@@ -18,5 +25,6 @@ int main (int argn, char **argv) {
         }
     }
 
+    lcd_deinit ();
     return 0;
 }
