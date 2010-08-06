@@ -24,8 +24,6 @@ int main (int argn, char **argv) {
     lcd_set_pixel (60, 15, TRUE);
     lcd_flash ();
 
-    lcd_debug_show_buffer ();
-
     lcd_deinit ();
     return 0;
 }

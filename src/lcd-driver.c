@@ -11,6 +11,12 @@
 #include <util/delay.h>
 #endif
 
+#ifdef M_PC
+/**
+ * Display the current LCD buffers on console
+ */
+static void lcd_debug_show_buffer (void);
+#endif
 /**
  * Turn ON/OFF display
  * @param[in] aOn FALSE - Turn ON; TRUE - Turn OFF
@@ -135,6 +141,10 @@ void lcd_flash (void) {
     for (i = 0; i < M_LCD_BANK_LENGTH; i++) {
         hw_write_data (TheDisplayBank2[i]);
     }
+
+#ifdef M_PC
+    lcd_debug_show_buffer ();
+#endif
 }
 
 void lcd_clear (void) {
@@ -146,7 +156,8 @@ void lcd_clear (void) {
     }
 }
 
-void lcd_debug_show_buffer (void) {
+#ifdef M_PC
+static void lcd_debug_show_buffer (void) {
     uint8_t y;
     uint16_t x;
     uint8_t bank;
@@ -179,6 +190,7 @@ void lcd_debug_show_buffer (void) {
         }
     }
 }
+#endif
 
 void lcd_print_char (uint8_t aX, uint8_t aY, uint8_t aChar) {
     uint8_t x;
