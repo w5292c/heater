@@ -2,8 +2,8 @@ MCPU=atmega32
 
 MCFLAGS=-DF_CPU=20000000UL -DM_AVR -O3 -Wall -Werror -Wextra
 
-#TARGET_FORMAT=ihex
-TARGET_FORMAT=binary
+TARGET_FORMAT=ihex
+#TARGET_FORMAT=binary
 
 TARGET_ELF=test
 ifeq "$(TARGET_FORMAT)" "ihex"
