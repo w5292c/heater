@@ -2,6 +2,7 @@
 
 #include "fonts.h"
 #include "macros.h"
+#include "hw-iface.h"
 
 #ifdef M_PC
 #include <stdio.h>
@@ -39,51 +40,50 @@ static inline uint8_t lcd_read_status () { return lcd_read_byte (TRUE); }
  * Turn ON/OFF display
  * @param[in] aOn FALSE - Turn ON; TRUE - Turn OFF
  */
-static void lcd_display_turn_off (uint8_t aOff) { lcd_write_byte (TRUE, 0xAEU | (0x01U & aOff)); }
+static void lcd_display_turn_off (uint8_t aOff) { hw_write_cmd (0xAEU | (0x01U & aOff)); }
 /**
  * Set the start line of the LCD module [0..31]
  * @param[in] aStartLine The start line to be set
  */
 static void lcd_set_start_line (uint8_t aStartLine)
-{ lcd_write_byte (TRUE, 0xC0U | (aStartLine & 0x1FU)); }
+{ hw_write_cmd (0xC0U | (aStartLine & 0x1FU)); }
 /**
  * Set the current page [0..3]
  * @param[in] aPage The page to be set
  */
-static void lcd_set_page (uint8_t aPage) { lcd_write_byte (TRUE, 0xACU | (aPage & 0x03U)); }
+static void lcd_set_page (uint8_t aPage) { hw_write_cmd (0xACU | (aPage & 0x03U)); }
 /**
  * Set the current address
  * @param[in] aAddress The address to be set
  */
-static void lcd_set_address (uint8_t aAddress) { lcd_write_byte (TRUE, aAddress & 0x7FU); }
+static void lcd_set_address (uint8_t aAddress) { hw_write_cmd (aAddress & 0x7FU); }
 /**
  * Set ADC flag
  * @param[in] aAdc 0 - forward scan, 1 - backward scan
  */
-static void lcd_select_adc (uint8_t aAdc) { lcd_write_byte (TRUE, 0xA0U | (aAdc & 0x01U)); }
+static void lcd_select_adc (uint8_t aAdc) { hw_write_cmd (0xA0U | (aAdc & 0x01U)); }
 /**
  * Turn ON/OFF static (power-saving) mode
  * @param[in] aStatic TRUE - turn ON static mode, FALSE - turn OFF static mode
  */
-static void lcd_set_static_mode (uint8_t aStatic)
-{ lcd_write_byte (TRUE, 0xA4U | (aStatic & 0x01U)); }
+static void lcd_set_static_mode (uint8_t aStatic) { hw_write_cmd (0xA4U | (aStatic & 0x01U)); }
 /**
  * Select duty for the LCD module
  * @param[in] aDuty Should be used '0'
  */
-static void lcd_select_duty (uint8_t aDuty) { lcd_write_byte (TRUE, 0xA8U | (aDuty & 0x01U)); }
+static void lcd_select_duty (uint8_t aDuty) { hw_write_cmd (0xA8U | (aDuty & 0x01U)); }
 /**
  * Start read-modify mode
  */
-static void lcd_read_modify_start (void) { lcd_write_byte (TRUE, 0xE0U); }
+static void lcd_read_modify_start (void) { hw_write_cmd (0xE0U); }
 /**
  * End read-modify mode
  */
-static void lcd_read_modify_end (void) { lcd_write_byte (TRUE, 0xEEU); }
+static void lcd_read_modify_end (void) { hw_write_cmd (0xEEU); }
 /**
  * Reset the LCD module
  */
-static inline void lcd_reset (void) { lcd_write_byte (TRUE, 0xE2U); }
+static inline void lcd_reset (void) { hw_write_cmd (0xE2U); }
 
 
 #define M_LCD_WIDTH (61)
