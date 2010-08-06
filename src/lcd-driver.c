@@ -12,79 +12,62 @@
 #endif
 
 /**
- * Set RESET pin of the LCD module
- * @param[in] aOn The value to be set
- */
-static void lcd_set_reset_pin (uint8_t aOn);
-/**
- * Low-level request to write byte to the LCD module
- * @param[in] aCommand TRUE - write a command byte; FALSE - write a data byte
- * @param[in] aByte The byte to be written to the LCD module
- */
-static void lcd_write_byte (uint8_t aCommand, uint8_t aByte);
-
-/**
- * Low-level request to read byte in the LCD module
- * @param[in] aCommand TRUE - read a command byte; FALSE - read a data byte
- * @return The read byte
- */
-static uint8_t lcd_read_byte (uint8_t aCommand);
-
-/**
- * Read the status of the LCD module
- * @return The status byte of the LCD module
- */
-static inline uint8_t lcd_read_status () { return lcd_read_byte (TRUE); }
-
-/**
  * Turn ON/OFF display
  * @param[in] aOn FALSE - Turn ON; TRUE - Turn OFF
  */
-static void lcd_display_turn_off (uint8_t aOff) { hw_write_cmd (0xAEU | (0x01U & aOff)); }
+static inline void lcd_display_turn_off (uint8_t aOff)
+{ hw_write_cmd (0xAEU | (0x01U & aOff)); }
 /**
  * Set the start line of the LCD module [0..31]
  * @param[in] aStartLine The start line to be set
  */
-static void lcd_set_start_line (uint8_t aStartLine)
+static inline void lcd_set_start_line (uint8_t aStartLine)
 { hw_write_cmd (0xC0U | (aStartLine & 0x1FU)); }
 /**
  * Set the current page [0..3]
  * @param[in] aPage The page to be set
  */
-static void lcd_set_page (uint8_t aPage) { hw_write_cmd (0xACU | (aPage & 0x03U)); }
+static inline void lcd_set_page (uint8_t aPage)
+{ hw_write_cmd (0xACU | (aPage & 0x03U)); }
 /**
  * Set the current address
  * @param[in] aAddress The address to be set
  */
-static void lcd_set_address (uint8_t aAddress) { hw_write_cmd (aAddress & 0x7FU); }
+static inline void lcd_set_address (uint8_t aAddress)
+{ hw_write_cmd (aAddress & 0x7FU); }
 /**
  * Set ADC flag
  * @param[in] aAdc 0 - forward scan, 1 - backward scan
  */
-static void lcd_select_adc (uint8_t aAdc) { hw_write_cmd (0xA0U | (aAdc & 0x01U)); }
+static inline void lcd_select_adc (uint8_t aAdc)
+{ hw_write_cmd (0xA0U | (aAdc & 0x01U)); }
 /**
  * Turn ON/OFF static (power-saving) mode
  * @param[in] aStatic TRUE - turn ON static mode, FALSE - turn OFF static mode
  */
-static void lcd_set_static_mode (uint8_t aStatic) { hw_write_cmd (0xA4U | (aStatic & 0x01U)); }
+static inline void lcd_set_static_mode (uint8_t aStatic)
+{ hw_write_cmd (0xA4U | (aStatic & 0x01U)); }
 /**
  * Select duty for the LCD module
  * @param[in] aDuty Should be used '0'
  */
-static void lcd_select_duty (uint8_t aDuty) { hw_write_cmd (0xA8U | (aDuty & 0x01U)); }
+static inline void lcd_select_duty (uint8_t aDuty)
+{ hw_write_cmd (0xA8U | (aDuty & 0x01U)); }
 /**
  * Start read-modify mode
  */
-static void lcd_read_modify_start (void) { hw_write_cmd (0xE0U); }
+static inline void lcd_read_modify_start (void)
+{ hw_write_cmd (0xE0U); }
 /**
  * End read-modify mode
  */
-static void lcd_read_modify_end (void) { hw_write_cmd (0xEEU); }
+static inline void lcd_read_modify_end (void)
+{ hw_write_cmd (0xEEU); }
 /**
  * Reset the LCD module
  */
-static inline void lcd_reset (void) { hw_write_cmd (0xE2U); }
-
+static inline void lcd_reset (void)
+{ hw_write_cmd (0xE2U); }
 
 #define M_LCD_WIDTH (61)
 #define M_LCD_HEIGHT (16)
@@ -100,16 +83,16 @@ static uint8_t TheDisplayBank2[M_LCD_BANK_LENGTH];
 void lcd_init (void) {
     /* после подачи напряжения питания удерживать вывод RES
        в состоянии логического “0” еще не менее 10 мкс */
-    lcd_set_reset_pin (FALSE);
+    hw_reset_bit (EHwFlagsReset);
     _delay_us(50);
 
     /* подать перепад на вывод RES c логического “0” в логическую “1”,
        длительность фронта не более 10 мкс */
-    lcd_set_reset_pin (TRUE);
+    hw_set_bit (EHwFlagsReset);
 
     /* ожидать сброса бита RESET в байте состояния или выждать не менее 2 мс */
     _delay_ms(2);
-    while (0x10U & lcd_read_status ()) {}
+    while (0x10U & hw_read_status ()) {}
 
     /* подать команду снятия флага RMW (END) */
     lcd_read_modify_end ();
@@ -143,14 +126,14 @@ void lcd_flash (void) {
     lcd_set_page (0);
     lcd_set_address (0);
     for (i = 0; i < M_LCD_BANK_LENGTH; i++) {
-        lcd_write_byte (FALSE, TheDisplayBank1[i]);
+        hw_write_data (TheDisplayBank1[i]);
     }
 
     /* and the other one the second */
     lcd_set_page (1);
     lcd_set_address (0);
     for (i = 0; i < M_LCD_BANK_LENGTH; i++) {
-        lcd_write_byte (FALSE, TheDisplayBank2[i]);
+        hw_write_data (TheDisplayBank2[i]);
     }
 }
 
@@ -257,33 +240,4 @@ void lcd_set_pixel (uint8_t aX, uint8_t aY, uint8_t aValue) {
             TheDisplayBank1[aX] = TheDisplayBank1[aX] & ~bit_mask;
         }
     }
-}
-
-static void lcd_write_byte (uint8_t aCommand, uint8_t aByte) {
-    M_UNUSED_PARAM (aByte);
-
-    /* wait until the LCD module is ready */
-    while (0x80U & lcd_read_status ()) {}
-
-    if (aCommand) {
-        printf ("Writing a command byte: 0x%2.2x\n", aByte);
-    }
-    else {
-        printf ("Writing a data byte: 0x%2.2x\n", aByte);
-    }
-}
-
-static uint8_t lcd_read_byte (uint8_t aCommand) {
-    if (aCommand) {
-        return 0x40;
-    }
-    else {
-        return 0x00;
-    }
-}
-
-static void lcd_set_reset_pin (uint8_t aOn) {
-    M_UNUSED_PARAM (aOn);
-
-    printf ("Changing RESET pin: [%d]\n", aOn);
 }
