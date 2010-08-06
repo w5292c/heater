@@ -2,7 +2,9 @@
 #define __AVR_LCD_PROJECT_MACROS_H__
 
 #ifdef M_DEBUG_LOGGING
+#ifdef M_PC
 #include <stdio.h>
+#endif
 
 #define m_return_if_fail(arg) \
     if (!(arg)) { \
