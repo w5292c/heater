@@ -6,6 +6,10 @@
 #include <stdio.h>
 #endif
 
+#ifdef M_AVR
+#include <avr/io.h>
+#endif /* M_AVR */
+
 /**
  * Connection diagramm:
  * -----------------------------------------------------------------------------
@@ -26,6 +30,17 @@
  * |     RES |   O | PB0 | T0 (Timer/Counter0 External Counter Input)          |
  * -----------------------------------------------------------------------------
  */
+
+void hw_init (void) {
+#ifdef M_AVR
+    /* Define PB0 and PB1 pins as outputs */
+    PORTB = 0x01U;
+    DDRB |= (1<<DDB0) | (1<<DDB1);
+    /* Define PC6 and PC7 pins as outputs */
+    PORTC = 0x80U;
+    DDRC |= (1<<DDC6) | (1<<DDC6);
+#endif /* M_AVR */
+}
 
 uint8_t hw_read_data (void) {
     printf ("Reading data\n");

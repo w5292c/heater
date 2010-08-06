@@ -3,6 +3,11 @@
 
 #include "types.h"
 
+/**
+ * Initialize the HW interface
+ */
+void hw_init (void);
+
 typedef enum {
     EHwFlagsReset,
     EHwFlagsCommand,

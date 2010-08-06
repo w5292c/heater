@@ -1,8 +1,5 @@
-#include "fonts.h"
-#include "macros.h"
 #include "lcd-driver.h"
-
-#include <avr/io.h>
+#include "macros.h"
 
 int main (int argn, char **argv) {
     M_UNUSED_PARAM (argn);

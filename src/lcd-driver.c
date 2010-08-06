@@ -87,6 +87,9 @@ static uint8_t TheDisplayBank1[M_LCD_BANK_LENGTH];
 static uint8_t TheDisplayBank2[M_LCD_BANK_LENGTH];
 
 void lcd_init (void) {
+    /* initialize the HW pins to the LCD module */
+    hw_init ();
+
     /* после подачи напряжения питания удерживать вывод RES
        в состоянии логического “0” еще не менее 10 мкс */
     hw_reset_bit (EHwFlagsReset);
