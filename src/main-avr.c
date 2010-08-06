@@ -11,22 +11,22 @@ int main (int argn, char **argv) {
     lcd_init ();
     lcd_clear ();
 
-    lcd_print_char (0, 0, 'F');
+    uint8_t sh = 7;
+    lcd_print_char (0 + sh, 1, 'H');
+    lcd_paint_char (8 + sh, 1, 'e');
+    lcd_print_char (16 + sh, 1, 'l');
+    lcd_paint_char (24 + sh, 1, 'l');
+    lcd_print_char (32 + sh, 1, 'o');
+    lcd_paint_char (40 + sh, 1, '!');
+    lcd_set_pixel (0, 0, TRUE);
+    lcd_set_pixel (0, 15, TRUE);
+    lcd_set_pixel (60, 0, TRUE);
+    lcd_set_pixel (60, 15, TRUE);
     lcd_flash ();
+
+    /* the main loop */
+    for (;;) {}
 
     lcd_deinit ();
     return 0;
 }
-
-#if 0
-    muword i, j;
-    for (i = 0; i < 14; i++) {
-        mubyte bt = get_font14_byte (126, i);
-        for (j = 0x80U; j != 0; j = j >>1) {
-            if (bt & j) {
-            }
-            else {
-            }
-        }
-    }
-#endif
