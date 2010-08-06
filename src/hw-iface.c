@@ -32,6 +32,19 @@
  * -----------------------------------------------------------------------------
  */
 
+/**
+ * Read LCD module
+ * @param[in] aStatus FALSE - read a data byte, TRUE - read a status byte
+ * @return The read byte
+ */
+static uint8_t hw_read_lcd (uint8_t aStatus);
+/**
+ * Write LCD module
+ * @param[in] aCmd FALSE - write a data byte, TRUE - write a status byte
+ * @param[in] aByte The data to be written
+ */
+static void hw_write_lcd (uint8_t aCmd, uint8_t aByte);
+
 void hw_init (void) {
 #ifdef M_AVR
     /* Define PA0..PA3 and PD4..PD7 pins as inputs for now */
@@ -59,7 +72,84 @@ uint8_t hw_read_status (void) {
     return hw_read_lcd (TRUE);
 }
 
-uint8_t hw_read_lcd (uint8_t aStatus) {
+static void hw_write_lcd (uint8_t aCmd, uint8_t aByte) {
+#ifdef M_AVR
+    /* make sure the LCD module is ready to receive commands */
+    while (0x80U & hw_read_status ()) {}
+
+    /* pull 'E' (PB1) pin low (LCD module not selected) */
+    PORTB &= ~(1<<PB1);
+    if (aCmd) {
+        /* pull A0 (PC7) pin low (choose 'command' mode) */
+        PORTC &= ~(1<<PC7);
+    }
+    else {
+        /* pull A0 (PC7) pin high (choose 'data' mode) */
+        PORTC |= (1<<PC7);
+    }
+    /* pull RD/WR (PC6) pin low (choose 'write' mode) */
+    PORTC &= ~(1<<PC6);
+    /* a bit of a delay to set address */
+    /* Sync + 200 ns delay */
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    /* pull 'E' (PB1) pin high (select LCD module) */
+    PORTB &= ~(1<<PB1);
+    /* make the data pins output */
+    DDRA |= ((1<<DDA0) | (1<<DDA1) | (1<<DDA2) | (1<<DDA3));
+    DDRD |= ((1<<DDD4) | (1<<DDD5) | (1<<DDD6) | (1<<DDD7));
+    /* send the data byte out */
+    PORTA = (aByte & 0x0FU);
+    PORTD = (aByte & 0xF0U);
+    /* Sync + 400 ns delay */
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    /* pull 'E' (PB1) pin low again (LCD module not selected) */
+    PORTB &= ~(1<<PB1);
+    /* Sync + 200 ns delay */
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    /* make the data port input again */
+    DDRA &= ~((1<<DDA0) | (1<<DDA1) | (1<<DDA2) | (1<<DDA3));
+    DDRD &= ~((1<<DDD4) | (1<<DDD5) | (1<<DDD6) | (1<<DDD7));
+    PORTA = 0x00U;
+    PORTD = 0x00U;
+    /* Sync + 400 ns delay */
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+    asm volatile ("nop\n" ::);
+#endif /* M_AVR */
+
+#ifdef M_PC
+    if (aCmd) {
+        printf ("Writing command: [0x%2.2x]\n", aByte);
+    }
+    else {
+        printf ("Writing data: [0x%2.2x]\n", aByte);
+    }
+#endif /* M_PC */
+}
+
+static uint8_t hw_read_lcd (uint8_t aStatus) {
     uint8_t status;
 
 #ifdef M_AVR
@@ -124,22 +214,11 @@ uint8_t hw_read_lcd (uint8_t aStatus) {
 }
 
 void hw_write_cmd (uint8_t aCmd) {
-    M_UNUSED_PARAM (aCmd);
-
-    /* make sure the LCD module is ready to receive commands */
-    while (0x80U & hw_read_status ()) {}
-
-#ifdef M_PC
-    printf ("Writing command: [%2.2x]\n", aCmd);
-#endif /* M_PC */
+    hw_write_lcd (TRUE, aCmd);
 }
 
 void hw_write_data (uint8_t aData) {
-    M_UNUSED_PARAM (aData);
-
-#ifdef M_PC
-    printf ("Writing data: [%2.2x]\n", aData);
-#endif /* M_PC */
+    hw_write_lcd (FALSE, aData);
 }
 
 void hw_reset_lcd (void) {
