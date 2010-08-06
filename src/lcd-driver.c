@@ -7,9 +7,6 @@
 #ifdef M_PC
 #include <stdio.h>
 #endif
-#ifdef M_AVR
-#include <util/delay.h>
-#endif
 
 #ifdef M_PC
 /**
@@ -89,19 +86,7 @@ static uint8_t TheDisplayBank2[M_LCD_BANK_LENGTH];
 void lcd_init (void) {
     /* initialize the HW pins to the LCD module */
     hw_init ();
-
-    /* после подачи напряжения питания удерживать вывод RES
-       в состоянии логического “0” еще не менее 10 мкс */
-    hw_reset_bit (EHwFlagsReset);
-    _delay_us(50);
-
-    /* подать перепад на вывод RES c логического “0” в логическую “1”,
-       длительность фронта не более 10 мкс */
-    hw_set_bit (EHwFlagsReset);
-
-    /* ожидать сброса бита RESET в байте состояния или выждать не менее 2 мс */
-    _delay_ms(2);
-    while (0x10U & hw_read_status ()) {}
+    hw_reset_lcd ();
 
     /* подать команду снятия флага RMW (END) */
     lcd_read_modify_end ();

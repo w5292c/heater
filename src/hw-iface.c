@@ -8,6 +8,7 @@
 
 #ifdef M_AVR
 #include <avr/io.h>
+#include <util/delay.h>
 #endif /* M_AVR */
 
 /**
@@ -33,10 +34,14 @@
 
 void hw_init (void) {
 #ifdef M_AVR
-    /* Define PB0 and PB1 pins as outputs */
+    /* Define PA0..PA3 and PD4..PD7 pins as inputs for now */
+    PORTA = 0x00U;
+    DDRA &= ~((1<<DDA0) | (1<<DDA1) | (1<<DDA2) | (1<<DDA3));
+    PORTD = 0x00U;
+    DDRD &= ~((1<<DDD4) | (1<<DDD5) | (1<<DDD6) | (1<<DDD7));
+    /* Define PB0, PB1, PC6 and PC7 pins as outputs */
     PORTB = 0x01U;
     DDRB |= (1<<DDB0) | (1<<DDB1);
-    /* Define PC6 and PC7 pins as outputs */
     PORTC = 0x80U;
     DDRC |= (1<<DDC6) | (1<<DDC6);
 #endif /* M_AVR */
@@ -68,14 +73,17 @@ void hw_write_data (uint8_t aData) {
     printf ("Writing data: [%2.2x]\n", aData);
 }
 
-void hw_set_bit (THwIFaceExtraFlags aBit) {
-    M_UNUSED_PARAM (aBit);
+void hw_reset_lcd (void) {
+#ifdef M_AVR
+    /* set the 'RESET' pin to low */
+    PORTB &= ~(1<<PB0);
+    _delay_us(50);
+    /* set the 'RESET' pin to low */
+    PORTB |= (1<<PB0);
+    while (0x10U & hw_read_status ()) {}
+#endif /* M_AVR */
 
-    printf ("Setting bit: [%2.2x]\n", aBit);
-}
-
-void hw_reset_bit (THwIFaceExtraFlags aBit) {
-    M_UNUSED_PARAM (aBit);
-
-    printf ("Resetting bit: [%2.2x]\n", aBit);
+#ifdef M_PC
+    printf ("Resetting LCD module\n");
+#endif /* M_PC */
 }

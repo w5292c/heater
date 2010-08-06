@@ -7,14 +7,6 @@
  * Initialize the HW interface
  */
 void hw_init (void);
-
-typedef enum {
-    EHwFlagsReset,
-    EHwFlagsCommand,
-    EHwFlagsA0,
-    EHwFlagsRdWr
-} THwIFaceExtraFlags;
-
 /**
  * Read data byte in the LCD module
  * @return The read data byte
@@ -35,7 +27,9 @@ void hw_write_cmd (uint8_t aCmd);
  * @param[in] aByte The data byte to be written to the LCD module
  */
 void hw_write_data (uint8_t aData);
-void hw_set_bit (THwIFaceExtraFlags aBit);
-void hw_reset_bit (THwIFaceExtraFlags aBit);
+/**
+ * Set the 'reset' pin for the LCD module
+ */
+void hw_reset_lcd (void);
 
 #endif /* __AVR_LCD_PROJECT_HW_IFACE_H__ */
