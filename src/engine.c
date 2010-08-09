@@ -1,6 +1,7 @@
 #include "engine.h"
 
 #include "macros.h"
+#include "hw-timer.h"
 #include "scheduler.h"
 #include "lcd-driver.h"
 
@@ -21,12 +22,18 @@ static TEngineState TheEngineState = EEngineStateInit;
  * @return More work is pending
  */
 static uint8_t engine_tick (void);
+/**
+ * 1 KHz timer tick
+ */
+static void engine_timer_tick (void);
 
 void engine_init (void) {
     scheduler_add (&engine_tick);
+    hw_timer_add_callback (&engine_timer_tick);
 }
 
 void engine_deinit (void) {
+    hw_timer_remove_callback (&engine_timer_tick);
     scheduler_remove (&engine_tick);
 
     /* deinitialize the LCD interface */
@@ -75,4 +82,43 @@ static uint8_t engine_tick (void) {
     };
 
     return more;
+}
+
+static void engine_timer_tick (void) {
+    static uint16_t cnt = 0;
+
+    if (1000 == cnt) {
+        const uint8_t sh = 2;
+
+        lcd_clear ();
+        lcd_print_char (0 + sh, 1, 'A');
+        lcd_paint_char (8 + sh, 1, 'n');
+        lcd_print_char (16 + sh, 1, 'o');
+        lcd_paint_char (24 + sh, 1, 't');
+        lcd_print_char (32 + sh, 1, 'h');
+        lcd_paint_char (40 + sh, 1, 'e');
+        lcd_paint_char (48 + sh, 1, 'r');
+        lcd_set_pixel (0, 0, TRUE);
+        lcd_set_pixel (0, 15, TRUE);
+        lcd_set_pixel (60, 0, TRUE);
+        lcd_set_pixel (60, 15, TRUE);
+        lcd_flash ();
+    }
+    else if (2000 == cnt) {
+        const uint8_t sh = 7;
+
+        lcd_clear ();
+        lcd_print_char (0 + sh, 1, 'H');
+        lcd_paint_char (8 + sh, 1, 'e');
+        lcd_print_char (16 + sh, 1, 'l');
+        lcd_paint_char (24 + sh, 1, 'l');
+        lcd_print_char (32 + sh, 1, 'o');
+        lcd_paint_char (40 + sh, 1, '!');
+        lcd_flash ();
+
+        /* reset the static counter */
+        cnt = 0;
+    }
+
+    cnt++;
 }
