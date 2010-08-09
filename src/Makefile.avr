@@ -52,4 +52,4 @@ clean:
 	rm *.o $(TARGET_ELF) $(TARGET_FILENAME) >/dev/null 2>&1 || true
 
 clean-source:
-	rm *~
+	rm *~ >/dev/null 2>&1 || true
