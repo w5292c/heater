@@ -1,15 +1,14 @@
-#include "macros.h"
 #include "engine.h"
 #include "scheduler.h"
 
-int main (int argn, char **argv) {
-    M_UNUSED_PARAM (argn);
-    M_UNUSED_PARAM (argv);
+#include <avr/interrupt.h>
 
+int main () {
     /* initialize the engine */
     engine_init ();
 
     /* the main loop */
+    sei ();
     scheduler_start ();
 
     /* deinitialize the engine */
