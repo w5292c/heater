@@ -18,7 +18,7 @@ void scheduler_init (void) {
     uint8_t i;
 
     for (i = 0; i < M_MAX_TICKS; i++) {
-        TheItems[i].mTick = 0;
+        TheItems[i].mTick = NULL;
     }
 }
 
@@ -65,7 +65,7 @@ void scheduler_remove (scheduler_tick aTick) {
         info = &TheItems[i];
 
         if (info->mTick == aTick) {
-            info->mTick = 0;
+            info->mTick = NULL;
             break;
         }
     }
