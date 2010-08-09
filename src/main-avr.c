@@ -12,5 +12,8 @@ int main (int argn, char **argv) {
     /* the main loop */
     scheduler_start ();
 
+    /* deinitialize the engine */
+    engine_deinit ();
+
     return 0;
 }

@@ -10,7 +10,6 @@ typedef enum {
     EEngineStateState2,
     EEngineStateState3,
     EEngineStateState4,
-    EEngineStateState5,
     EEngineStateDone
 } TEngineState;
 
@@ -25,6 +24,13 @@ static uint8_t engine_tick (void);
 
 void engine_init (void) {
     scheduler_add (&engine_tick);
+}
+
+void engine_deinit (void) {
+    scheduler_remove (&engine_tick);
+
+    /* deinitialize the LCD interface */
+    lcd_deinit ();
 }
 
 static uint8_t engine_tick (void) {
@@ -61,10 +67,6 @@ static uint8_t engine_tick (void) {
         break;
     case EEngineStateState4:
         lcd_flash ();
-        TheEngineState = EEngineStateState5;
-        break;
-    case EEngineStateState5:
-        lcd_deinit ();
         TheEngineState = EEngineStateDone;
         break;
     case EEngineStateDone:
