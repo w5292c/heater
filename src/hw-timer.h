@@ -10,7 +10,7 @@ typedef void (*hw_timer_callback) (void);
 void hw_timer_init (void);
 void hw_timer_deinit (void);
 
-void hw_timer_add_tick (hw_timer_callback aCallback);
-void hw_timer_remove_tick (hw_timer_callback aCallback);
+void hw_timer_add_callback (hw_timer_callback aCallback);
+void hw_timer_remove_callback (hw_timer_callback aCallback);
 
 #endif /* __AVR_LCD_PROJECT_HW_TIMER_H__ */
