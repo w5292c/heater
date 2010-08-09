@@ -18,9 +18,9 @@ all: $(TARGET_FILENAME)
 $(TARGET_FILENAME): $(TARGET_ELF)
 	avr-objcopy -O $(TARGET_FORMAT) $(TARGET_ELF) $(TARGET_FILENAME)
 
-test: liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-i2c.o hw-timer.o main-avr.c
-	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) \
-		main-avr.c liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-i2c.o hw-timer.o \
+test: liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-i2c.o hw-timer.o hw-keys.o main-avr.c
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) main-avr.c \
+		liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-i2c.o hw-timer.o hw-keys.o \
 		-o test
 	avr-strip $(TARGET_ELF)
 
@@ -44,6 +44,9 @@ hw-i2c.o: hw-i2c.c hw-i2c.h
 
 hw-timer.o: hw-timer.c hw-timer.h
 	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) hw-timer.c -c -o hw-timer.o
+
+hw-keys.o: hw-keys.c hw-keys.h
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) hw-keys.c -c -o hw-keys.o
 
 prg: $(TARGET_FILENAME)
 	jtagice -dATmega32 -e -iftest.hex -pf -vf -R

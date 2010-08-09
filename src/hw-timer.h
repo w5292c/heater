@@ -3,7 +3,7 @@
 
 #include "types.h"
 
-#define M_MAX_TIMER_TICKS (1U)
+#define M_MAX_TIMER_TICKS (2U)
 
 typedef void (*hw_timer_callback) (void);
 
