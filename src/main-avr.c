@@ -1,5 +1,6 @@
 #include "lcd-driver.h"
 #include "macros.h"
+#include "scheduler.h"
 
 int main (int argn, char **argv) {
     M_UNUSED_PARAM (argn);
@@ -22,7 +23,7 @@ int main (int argn, char **argv) {
     lcd_flash ();
 
     /* the main loop */
-    for (;;) {}
+    scheduler_start ();
 
     lcd_deinit ();
     return 0;

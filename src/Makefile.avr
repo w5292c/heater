@@ -1,6 +1,6 @@
 MCPU=atmega32
 
-MCFLAGS=-DF_CPU=16000000UL -DM_AVR -O3 -Wall -Werror -Wextra
+MCFLAGS=-DF_CPU=16000000UL -DM_MAX_TICKS=4U -DM_AVR -O3 -Wall -Werror -Wextra
 
 TARGET_FORMAT=ihex
 #TARGET_FORMAT=binary
@@ -18,8 +18,10 @@ all: $(TARGET_FILENAME)
 $(TARGET_FILENAME): $(TARGET_ELF)
 	avr-objcopy -O $(TARGET_FORMAT) $(TARGET_ELF) $(TARGET_FILENAME)
 
-test: liblcd.o lcd-driver.o hw-iface.o main-avr.c
-	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) main-avr.c liblcd.o lcd-driver.o hw-iface.o -o test
+test: liblcd.o lcd-driver.o hw-iface.o scheduler.o main-avr.c
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) \
+		main-avr.c liblcd.o lcd-driver.o hw-iface.o scheduler.o \
+		-o test
 	avr-strip $(TARGET_ELF)
 
 liblcd.o: config.h fonts.h macros.h types.h fonts.c
@@ -30,6 +32,9 @@ lcd-driver.o: lcd-driver.c lcd-driver.h
 
 hw-iface.o: hw-iface.c hw-iface.h
 	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) hw-iface.c -c -o hw-iface.o
+
+scheduler.o: scheduler.c scheduler.h
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) scheduler.c -c -o scheduler.o
 
 prg: $(TARGET_FILENAME)
 	jtagice -dATmega32 -e -iftest.hex -pf -vf -R
