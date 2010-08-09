@@ -18,10 +18,9 @@ all: $(TARGET_FILENAME)
 $(TARGET_FILENAME): $(TARGET_ELF)
 	avr-objcopy -O $(TARGET_FORMAT) $(TARGET_ELF) $(TARGET_FILENAME)
 
-test: liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-i2c.o hw-timer.o hw-keys.o main-avr.c
-	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) main-avr.c \
-		liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-i2c.o hw-timer.o hw-keys.o \
-		-o test
+test: liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-rtc.o hw-timer.o hw-keys.o main-avr.c
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) main-avr.c -o test \
+		liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-rtc.o hw-timer.o hw-keys.o
 	avr-strip $(TARGET_ELF)
 
 liblcd.o: config.h fonts.h macros.h types.h fonts.c
@@ -39,8 +38,8 @@ scheduler.o: scheduler.c scheduler.h
 engine.o: engine.c engine.h
 	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) engine.c -c -o engine.o
 
-hw-i2c.o: hw-i2c.c hw-i2c.h
-	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) hw-i2c.c -c -o hw-i2c.o
+hw-rtc.o: hw-rtc.c hw-rtc.h
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) hw-rtc.c -c -o hw-rtc.o
 
 hw-timer.o: hw-timer.c hw-timer.h
 	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) hw-timer.c -c -o hw-timer.o
