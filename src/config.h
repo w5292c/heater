@@ -7,5 +7,9 @@
  */
 #define M_DEBUG_LOGGING
 #endif
+/**
+ * The maximum number of scheduler tasks
+ */
+#define M_MAX_TICKS (1U)
 
 #endif/* __AVR_LCD_PROJECT_CONFIG_H__ */

@@ -1,6 +1,7 @@
 #include "scheduler.h"
 
 #include "macros.h"
+#include "config.h"
 
 #ifndef M_MAX_TICKS
 #error "The macro M_MAX_TICKS is not defined, the scheduler is disabled"
