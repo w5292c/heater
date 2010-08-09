@@ -9,7 +9,6 @@
 
 typedef struct {
     scheduler_tick mTick;
-    void *mUserPointer;
 } TTickInfo;
 
 static uint8_t TheExitRequest = FALSE;
@@ -20,7 +19,6 @@ void scheduler_init (void) {
 
     for (i = 0; i < M_MAX_TICKS; i++) {
         TheItems[i].mTick = 0;
-        TheItems[i].mUserPointer = 0;
     }
 }
 
@@ -33,10 +31,7 @@ void scheduler_start (void) {
 
             tick = TheItems[i].mTick;
             if (tick) {
-                void *data;
-
-                data = TheItems[i].mUserPointer;
-                (*tick)(data);
+                (*tick) ();
             }
         }
     }
@@ -46,7 +41,7 @@ void scheduler_stop (void) {
     TheExitRequest = TRUE;
 }
 
-void scheduler_add (scheduler_tick aTick, void *aPointer) {
+void scheduler_add (scheduler_tick aTick) {
     uint8_t i;
     TTickInfo *info;
 
@@ -55,7 +50,6 @@ void scheduler_add (scheduler_tick aTick, void *aPointer) {
 
         if (!info->mTick) {
             info->mTick = aTick;
-            info->mUserPointer = aPointer;
             break;
         }
     }
@@ -72,7 +66,6 @@ void scheduler_remove (scheduler_tick aTick) {
 
         if (info->mTick == aTick) {
             info->mTick = 0;
-            info->mUserPointer = 0;
             break;
         }
     }

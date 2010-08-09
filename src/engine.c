@@ -21,16 +21,14 @@ static TEngineState TheEngineState = EEngineStateInit;
  * @param[in] aData The engine pointer
  * @return More work is pending
  */
-static uint8_t engine_tick (void *aData);
+static uint8_t engine_tick (void);
 
 void engine_init (void) {
-    scheduler_add (&engine_tick, 0);
+    scheduler_add (&engine_tick);
 }
 
-static uint8_t engine_tick (void *aData) {
+static uint8_t engine_tick (void) {
     uint8_t more = TRUE;
-
-    M_UNUSED_PARAM (aData);
 
     switch (TheEngineState)
     {

@@ -8,7 +8,7 @@
  * @param[in] data The user pointer
  * @return The flag if another piece of work is pending
  */
-typedef uint8_t (*scheduler_tick) (void *aData);
+typedef uint8_t (*scheduler_tick) (void);
 
 /**
  * Initialize the task scheduler
@@ -25,9 +25,8 @@ void scheduler_stop (void);
 /**
  * Add another item to the scheduler
  * @param[in] aTick The tick function
- * @param[in] aPointer The user pointer to be passed to the tick function
  */
-void scheduler_add (scheduler_tick aTick, void *aPointer);
+void scheduler_add (scheduler_tick aTick);
 /**
  * Remove the item from the scheduler
  * @param[in] aTick The tick function to be removed from the scheduler
