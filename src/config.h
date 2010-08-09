@@ -10,6 +10,6 @@
 /**
  * The maximum number of scheduler tasks
  */
-#define M_MAX_TICKS (2U)
+#define M_MAX_TICKS (3U)
 
 #endif/* __AVR_LCD_PROJECT_CONFIG_H__ */
