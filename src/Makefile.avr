@@ -31,6 +31,9 @@ lcd-driver.o: lcd-driver.c lcd-driver.h
 hw-iface.o: hw-iface.c hw-iface.h
 	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) hw-iface.c -c -o hw-iface.o
 
+prg: $(TARGET_FILENAME)
+	jtagice -dATmega32 -e -iftest.hex -pf -vf -R
+
 clean:
 	rm *.o $(TARGET_ELF) $(TARGET_FILENAME) >/dev/null 2>&1 || true
 
