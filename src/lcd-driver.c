@@ -18,8 +18,8 @@ static void lcd_debug_show_buffer (void);
  * Turn ON/OFF display
  * @param[in] aOn FALSE - Turn ON; TRUE - Turn OFF
  */
-static inline void lcd_display_turn_off (uint8_t aOff)
-{ hw_write_cmd (0xAEU | (0x01U & aOff)); }
+static inline void lcd_display_turn_on (uint8_t aOn)
+{ hw_write_cmd (0xAEU | (0x01U & aOn)); }
 /**
  * Set the start line of the LCD module [0..31]
  * @param[in] aStartLine The start line to be set
@@ -31,7 +31,7 @@ static inline void lcd_set_start_line (uint8_t aStartLine)
  * @param[in] aPage The page to be set
  */
 static inline void lcd_set_page (uint8_t aPage)
-{ hw_write_cmd (0xACU | (aPage & 0x03U)); }
+{ hw_write_cmd (0xB8U | (aPage & 0x03U)); }
 /**
  * Set the current address
  * @param[in] aAddress The address to be set
@@ -98,12 +98,12 @@ void lcd_init (void) {
     lcd_select_duty (0);
 
     /* подать команду включения дисплея (Display ON/OFF) */
-    lcd_display_turn_off (FALSE);
+    lcd_display_turn_on (TRUE);
 
-    lcd_reset ();
+    /*lcd_reset ();*/
     lcd_select_adc (0);
-    lcd_read_modify_start ();
-    lcd_read_modify_end ();
+    /*lcd_read_modify_start ();*/
+    /*lcd_read_modify_end ();*/
 
     lcd_set_start_line (0);
     lcd_set_page (0);

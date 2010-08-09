@@ -53,10 +53,10 @@ void hw_init (void) {
     PORTD = 0x00U;
     DDRD &= ~((1<<DDD4) | (1<<DDD5) | (1<<DDD6) | (1<<DDD7));
     /* Define PB0, PB1, PC6 and PC7 pins as outputs */
-    PORTB = 0x01U;
+    PORTB = 0x00U;
     DDRB |= (1<<DDB0) | (1<<DDB1);
-    PORTC = 0x80U;
-    DDRC |= (1<<DDC6) | (1<<DDC6);
+    PORTC = 0x00U;
+    DDRC |= (1<<DDC6) | (1<<DDC7);
 #endif /* M_AVR */
 
 #ifdef M_PC
@@ -97,7 +97,7 @@ static void hw_write_lcd (uint8_t aCmd, uint8_t aByte) {
     asm volatile ("nop\n" ::);
     asm volatile ("nop\n" ::);
     /* pull 'E' (PB1) pin high (select LCD module) */
-    PORTB &= ~(1<<PB1);
+    PORTB |= (1<<PB1);
     /* make the data pins output */
     DDRA |= ((1<<DDA0) | (1<<DDA1) | (1<<DDA2) | (1<<DDA3));
     DDRD |= ((1<<DDD4) | (1<<DDD5) | (1<<DDD6) | (1<<DDD7));
@@ -173,7 +173,7 @@ static uint8_t hw_read_lcd (uint8_t aStatus) {
     asm volatile ("nop\n" ::);
     asm volatile ("nop\n" ::);
     /* pull 'E' (PB1) pin high (select LCD module) */
-    PORTB &= ~(1<<PB1);
+    PORTB |= (1<<PB1);
     /* Sync + 400 ns delay */
     asm volatile ("nop\n" ::);
     asm volatile ("nop\n" ::);
