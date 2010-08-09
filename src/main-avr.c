@@ -1,4 +1,5 @@
 #include "macros.h"
+#include "engine.h"
 #include "scheduler.h"
 
 int main (int argn, char **argv) {
