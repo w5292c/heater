@@ -72,3 +72,9 @@ void scheduler_remove (scheduler_tick aTick) {
 
     m_return_if_fail (i != M_MAX_TICKS);
 }
+
+void scheduler_enter_sleep_mode (void) {
+}
+
+void scheduler_leave_sleep_mode (void) {
+}

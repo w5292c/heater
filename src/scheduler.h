@@ -32,5 +32,13 @@ void scheduler_add (scheduler_tick aTick);
  * @param[in] aTick The tick function to be removed from the scheduler
  */
 void scheduler_remove (scheduler_tick aTick);
+/**
+ * Enter the sleep mode
+ */
+void scheduler_enter_sleep_mode (void);
+/**
+ * Leave the sleep mode
+ */
+void scheduler_leave_sleep_mode (void);
 
 #endif /* __AVR_LCD_PROJECT_SCHEDULER_H__ */
