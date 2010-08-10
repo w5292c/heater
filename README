@@ -1,0 +1,4 @@
+Dependency:
+* gdb-avr - The AVR debugger
+* avarice - The AVR programmer
+* gcc-avr - The AVR compiler
