@@ -8,7 +8,7 @@
 
 #ifdef M_AVR
 #include <avr/io.h>
-#include <util/delay.h>
+#include <util/delay_basic.h>
 #endif /* M_AVR */
 
 /**
@@ -225,8 +225,9 @@ void hw_reset_lcd (void) {
 #ifdef M_AVR
     /* set the 'RESET' pin to low */
     PORTB &= ~(1<<PB0);
-    _delay_us(50);
-    /* set the 'RESET' pin to low */
+    /* 20us delay */
+    _delay_loop_1 (107);
+    /* set the 'RESET' pin to high */
     PORTB |= (1<<PB0);
     while (0x10U & hw_read_status ()) {}
 #endif /* M_AVR */
