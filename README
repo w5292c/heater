@@ -2,3 +2,10 @@ Dependency:
 * gdb-avr - The AVR debugger
 * avarice - The AVR programmer
 * gcc-avr - The AVR compiler
+
+Working with avarice:
+$ avarice --program --file test.bin --jtag /dev/ttyS0 :<port>
+
+Working with gcc-avr:
+$ avr-gdb
+(gdb) target remote localhost:<port>
