@@ -12,10 +12,10 @@ typedef struct {
     hw_timer_callback mCallback;
 } THwTimerTickInfo;
 
-static uint8_t volatile TheTimerTickPending;
+static muint8 volatile TheTimerTickPending;
 static THwTimerTickInfo TheTimerTickInfos[M_MAX_TIMER_TICKS];
 
-static uint8_t hw_timer_tick (void);
+static muint8 hw_timer_tick (void);
 /**
  * Initialize the Timer0-related HW registers
  */
@@ -33,7 +33,7 @@ static inline void hw_timer_init_timer0 (void) {
 }
 
 void hw_timer_init (void) {
-    uint8_t i;
+    muint8 i;
 
     TheTimerTickPending = FALSE;
     for (i = 0; i < M_MAX_TIMER_TICKS; i++) {
@@ -50,7 +50,7 @@ void hw_timer_deinit (void) {
 }
 
 void hw_timer_add_callback (hw_timer_callback aCallback) {
-    uint8_t i;
+    muint8 i;
     THwTimerTickInfo *info;
 
     for (i = 0; i < M_MAX_TIMER_TICKS; i++) {
@@ -66,7 +66,7 @@ void hw_timer_add_callback (hw_timer_callback aCallback) {
 }
 
 void hw_timer_remove_callback (hw_timer_callback aCallback) {
-    uint8_t i;
+    muint8 i;
     THwTimerTickInfo *info;
 
     for (i = 0; i < M_MAX_TIMER_TICKS; i++) {
@@ -81,9 +81,9 @@ void hw_timer_remove_callback (hw_timer_callback aCallback) {
     m_return_if_fail (i != M_MAX_TIMER_TICKS);
 }
 
-static uint8_t hw_timer_tick (void) {
+static muint8 hw_timer_tick (void) {
     if (TheTimerTickPending) {
-        uint8_t i;
+        muint8 i;
         hw_timer_callback callback;
 
         /* dispatch another timer tick */

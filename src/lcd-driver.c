@@ -18,43 +18,43 @@ static void lcd_debug_show_buffer (void);
  * Turn ON/OFF display
  * @param[in] aOn FALSE - Turn ON; TRUE - Turn OFF
  */
-static inline void lcd_display_turn_on (uint8_t aOn)
+static inline void lcd_display_turn_on (muint8 aOn)
 { hw_write_cmd (0xAEU | (0x01U & aOn)); }
 /**
  * Set the start line of the LCD module [0..31]
  * @param[in] aStartLine The start line to be set
  */
-static inline void lcd_set_start_line (uint8_t aStartLine)
+static inline void lcd_set_start_line (muint8 aStartLine)
 { hw_write_cmd (0xC0U | (aStartLine & 0x1FU)); }
 /**
  * Set the current page [0..3]
  * @param[in] aPage The page to be set
  */
-static inline void lcd_set_page (uint8_t aPage)
+static inline void lcd_set_page (muint8 aPage)
 { hw_write_cmd (0xB8U | (aPage & 0x03U)); }
 /**
  * Set the current address
  * @param[in] aAddress The address to be set
  */
-static inline void lcd_set_address (uint8_t aAddress)
+static inline void lcd_set_address (muint8 aAddress)
 { hw_write_cmd (aAddress & 0x7FU); }
 /**
  * Set ADC flag
  * @param[in] aAdc 0 - forward scan, 1 - backward scan
  */
-static inline void lcd_select_adc (uint8_t aAdc)
+static inline void lcd_select_adc (muint8 aAdc)
 { hw_write_cmd (0xA0U | (aAdc & 0x01U)); }
 /**
  * Turn ON/OFF static (power-saving) mode
  * @param[in] aStatic TRUE - turn ON static mode, FALSE - turn OFF static mode
  */
-static inline void lcd_set_static_mode (uint8_t aStatic)
+static inline void lcd_set_static_mode (muint8 aStatic)
 { hw_write_cmd (0xA4U | (aStatic & 0x01U)); }
 /**
  * Select duty for the LCD module
  * @param[in] aDuty Should be used '0'
  */
-static inline void lcd_select_duty (uint8_t aDuty)
+static inline void lcd_select_duty (muint8 aDuty)
 { hw_write_cmd (0xA8U | (aDuty & 0x01U)); }
 /**
  * Start read-modify mode
@@ -80,8 +80,8 @@ static inline void lcd_reset (void)
 /**
  * These buffers correspond to the real RAM buffers in the LCD module
  */
-static uint8_t TheDisplayBank1[M_LCD_BANK_LENGTH];
-static uint8_t TheDisplayBank2[M_LCD_BANK_LENGTH];
+static muint8 TheDisplayBank1[M_LCD_BANK_LENGTH];
+static muint8 TheDisplayBank2[M_LCD_BANK_LENGTH];
 
 void lcd_init (void) {
     /* initialize the HW pins to the LCD module */
@@ -114,7 +114,7 @@ void lcd_deinit (void) {
 }
 
 void lcd_flash (void) {
-    uint8_t i;
+    muint8 i;
 
     /* send our local buffers to the LCD module, the first buffer first */
     lcd_set_page (0);
@@ -136,7 +136,7 @@ void lcd_flash (void) {
 }
 
 void lcd_clear (void) {
-    uint8_t i;
+    muint8 i;
 
     for (i = 0; i < M_LCD_BANK_LENGTH; i++) {
         TheDisplayBank1[i] = 0;
@@ -146,13 +146,13 @@ void lcd_clear (void) {
 
 #ifdef M_PC
 static void lcd_debug_show_buffer (void) {
-    uint8_t y;
-    uint16_t x;
-    uint8_t bank;
+    muint8 y;
+    muint8 x;
+    muint8 bank;
 
     for (bank = 0; bank < 2; bank++) {
         for (y = 0; y < 8; y++) {
-            uint8_t bit_mask;
+            muint8 bit_mask;
 
             bit_mask = (1 << y);
             printf ("[");
@@ -180,16 +180,16 @@ static void lcd_debug_show_buffer (void) {
 }
 #endif
 
-void lcd_print_char (uint8_t aX, uint8_t aY, uint8_t aChar) {
-    uint8_t x;
-    uint8_t y;
+void lcd_print_char (muint8 aX, muint8 aY, muint8 aChar) {
+    muint8 x;
+    muint8 y;
 
     for (y = 0; y < 14; y++) {
-        mubyte image;
+        muint8 image;
 
         image = get_font14_byte (aChar, y);
         for (x = 0; x < 8; x++) {
-            uint8_t mask;
+            muint8 mask;
 
             mask = (1 << x);
             lcd_set_pixel (aX + 7 - x, y + aY, mask & image);
@@ -197,12 +197,12 @@ void lcd_print_char (uint8_t aX, uint8_t aY, uint8_t aChar) {
     }
 }
 
-void lcd_paint_char (uint8_t aX, uint8_t aY, uint8_t aChar) {
-    uint8_t x;
-    uint8_t y;
+void lcd_paint_char (muint8 aX, muint8 aY, muint8 aChar) {
+    muint8 x;
+    muint8 y;
 
     for (y = 0; y < 14; y++) {
-        mubyte image;
+        muint8 image;
 
         image = get_font14_byte (aChar, y);
         for (x = 0; x < 8; x++) {
@@ -213,8 +213,8 @@ void lcd_paint_char (uint8_t aX, uint8_t aY, uint8_t aChar) {
     }
 }
 
-void lcd_set_pixel (uint8_t aX, uint8_t aY, uint8_t aValue) {
-    uint8_t bit_mask;
+void lcd_set_pixel (muint8 aX, muint8 aY, muint8 aValue) {
+    muint8 bit_mask;
 
     m_return_if_fail (aX < 61);
     m_return_if_fail (aY < 16);

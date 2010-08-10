@@ -40,14 +40,14 @@ typedef enum {
 } TI2CState;
 
 static TRtcTimeInfo TheTimeInfo;
-static uint8_t volatile TheI2CState;
-static uint8_t volatile TheI2CIndex;
+static muint8 volatile TheI2CState;
+static muint8 volatile TheI2CIndex;
 static hw_rtc_time_ready TheCallback;
 /**
  * The tack to report to the client when RTC data is ready
  * @return FALSE No more work is needed
  */
-static uint8_t hw_rtc_tick (void);
+static muint8 hw_rtc_tick (void);
 /**
  * Start reading RTC using I2C protocol
  */
@@ -78,7 +78,7 @@ void hw_rtc_get_time (hw_rtc_time_ready aCallback) {
     hw_i2c_start_read ();
 }
 
-static uint8_t hw_rtc_tick (void) {
+static muint8 hw_rtc_tick (void) {
     if (EI2CStateRdDone == TheI2CState || EI2CStateRdDoneError == TheI2CState) {
         /* the time is ready, inform the client */
         m_return_val_if_fail (TheCallback, FALSE);
@@ -169,7 +169,7 @@ static inline void hw_i2c_handle_data_transmitted (void) {
 }
 
 static inline void hw_i2c_handle_data_received_ack (void) {
-    uint8_t data;
+    muint8 data;
 
     switch (TheI2CState)
     {
@@ -224,7 +224,7 @@ static inline void hw_i2c_handle_data_received_ack (void) {
 }
 
 static inline void hw_i2c_handle_data_received_nack (void) {
-    uint8_t data;
+    muint8 data;
 
     switch (TheI2CState)
     {

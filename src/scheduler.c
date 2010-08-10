@@ -11,11 +11,11 @@ typedef struct {
     scheduler_tick mTick;
 } TTickInfo;
 
-static uint8_t TheExitRequest = FALSE;
+static muint8 TheExitRequest = FALSE;
 static TTickInfo TheItems[M_MAX_TICKS];
 
 void scheduler_init (void) {
-    uint8_t i;
+    muint8 i;
 
     for (i = 0; i < M_MAX_TICKS; i++) {
         TheItems[i].mTick = NULL;
@@ -24,7 +24,7 @@ void scheduler_init (void) {
 
 void scheduler_start (void) {
     while (!TheExitRequest) {
-        uint8_t i;
+        muint8 i;
 
         for (i = 0; i < M_MAX_TICKS; i++) {
             scheduler_tick tick;
@@ -42,7 +42,7 @@ void scheduler_stop (void) {
 }
 
 void scheduler_add (scheduler_tick aTick) {
-    uint8_t i;
+    muint8 i;
     TTickInfo *info;
 
     for (i = 0; i < M_MAX_TICKS; i++) {
@@ -58,7 +58,7 @@ void scheduler_add (scheduler_tick aTick) {
 }
 
 void scheduler_remove (scheduler_tick aTick) {
-    uint8_t i;
+    muint8 i;
     TTickInfo *info;
 
     for (i = 0; i < M_MAX_TICKS; i++) {

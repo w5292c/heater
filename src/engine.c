@@ -21,7 +21,7 @@ static TEngineState TheEngineState = EEngineStateInit;
  * @param[in] aData The engine pointer
  * @return More work is pending
  */
-static uint8_t engine_tick (void);
+static muint8 engine_tick (void);
 /**
  * 1 KHz timer tick
  */
@@ -42,8 +42,8 @@ void engine_deinit (void) {
     lcd_deinit ();
 }
 
-static uint8_t engine_tick (void) {
-    uint8_t more = TRUE;
+static muint8 engine_tick (void) {
+    muint8 more = TRUE;
 
     switch (TheEngineState)
     {
@@ -57,7 +57,7 @@ static uint8_t engine_tick (void) {
         break;
     case EEngineStateState2:
         {
-        uint8_t sh = 7;
+        muint8 sh = 7;
         lcd_print_char (0 + sh, 1, 'H');
         lcd_paint_char (8 + sh, 1, 'e');
         lcd_print_char (16 + sh, 1, 'l');
@@ -87,10 +87,10 @@ static uint8_t engine_tick (void) {
 }
 
 static void engine_timer_tick (void) {
-    static uint16_t cnt = 0;
+    static muint16 cnt = 0;
 
     if (1000 == cnt) {
-        const uint8_t sh = 2;
+        const muint8 sh = 2;
 
         lcd_clear ();
         lcd_print_char (0 + sh, 1, 'A');
@@ -107,7 +107,7 @@ static void engine_timer_tick (void) {
         lcd_flash ();
     }
     else if (2000 == cnt) {
-        const uint8_t sh = 7;
+        const muint8 sh = 7;
 
         lcd_clear ();
         lcd_print_char (0 + sh, 1, 'H');

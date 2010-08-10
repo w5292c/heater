@@ -5,7 +5,7 @@
 #include <avr/pgmspace.h>
 #endif
 
-static mubyte TheFont14[] M_FLASH = {
+static muint8 TheFont14[] M_FLASH = {
 	/** Character code: 32; character name: <SPACE> */
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	/** Character code: 33; character name: <EXCLAMATION MARK> */
@@ -390,8 +390,8 @@ static mubyte TheFont14[] M_FLASH = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x44, 0x44, 0x44, 0x44, 0x44, 0x7c, 0x10, 0x10, 0x10,
 };
 
-mubyte get_font14_byte (mubyte aChar, mubyte aLine) {
-    muword index;
+muint8 get_font14_byte (muint8 aChar, muint8 aLine) {
+    muint16 index;
 
     m_return_val_if_fail (aChar >= 32, 0);
     m_return_val_if_fail (aChar <= 126 || aChar >= 160, 0);
@@ -404,7 +404,7 @@ mubyte get_font14_byte (mubyte aChar, mubyte aLine) {
         aChar -= (160 - (127 - 32));
     }
 
-    index = ((muword)aChar)*14 + aLine;
+    index = ((muint16)aChar)*14 + aLine;
 
 #ifdef M_PC
     return TheFont14[index];

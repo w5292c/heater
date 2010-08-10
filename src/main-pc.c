@@ -11,7 +11,7 @@ int main (int argn, char **argv) {
     lcd_init ();
     lcd_clear ();
 
-    uint8_t sh = 7;
+    muint8 sh = 7;
     lcd_print_char (0 + sh, 1, 'H');
     lcd_paint_char (8 + sh, 1, 'e');
     lcd_print_char (16 + sh, 1, 'l');

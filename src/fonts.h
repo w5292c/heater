@@ -3,6 +3,6 @@
 
 #include "types.h"
 
-mubyte get_font14_byte (mubyte aChar, mubyte aLine);
+muint8 get_font14_byte (muint8 aChar, muint8 aLine);
 
 #endif /* __AVR_LCD_PROJECT_FONTS_H__ */

@@ -5,15 +5,20 @@
 
 typedef struct {
     /* the time information */
-    uint8_t mSeconds;
-    uint8_t mMinute;
-    uint8_t mHour;
+    muint8 mCentiSeconds;
+    muint8 mSeconds;
+    muint8 mMinute;
+    muint8 mHour;
     /* the date information */
-    uint8_t mDay;
-    uint8_t mMonth;
-    uint8_t mYear;
+    muint8 mDay;
+    muint8 mMonth;
+    muint16 mYear;
 } TRtcTimeInfo;
 
+/**
+ * The client callback to notify that another timer info is retrieved
+ * @param[in] aTimeInfo The retrieved time infomation
+ */
 typedef void (*hw_rtc_time_ready) (TRtcTimeInfo *aTimeInfo);
 
 void hw_rtc_init (void);

@@ -8,7 +8,7 @@
  * @param[in] data The user pointer
  * @return The flag if another piece of work is pending
  */
-typedef uint8_t (*scheduler_tick) (void);
+typedef muint8 (*scheduler_tick) (void);
 
 /**
  * Initialize the task scheduler

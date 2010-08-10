@@ -37,13 +37,13 @@
  * @param[in] aStatus FALSE - read a data byte, TRUE - read a status byte
  * @return The read byte
  */
-static uint8_t hw_read_lcd (uint8_t aStatus);
+static muint8 hw_read_lcd (muint8 aStatus);
 /**
  * Write LCD module
  * @param[in] aCmd FALSE - write a data byte, TRUE - write a status byte
  * @param[in] aByte The data to be written
  */
-static void hw_write_lcd (uint8_t aCmd, uint8_t aByte);
+static void hw_write_lcd (muint8 aCmd, muint8 aByte);
 
 void hw_init (void) {
 #ifdef M_AVR
@@ -64,15 +64,15 @@ void hw_init (void) {
 #endif /* M_PC */
 }
 
-uint8_t hw_read_data (void) {
+muint8 hw_read_data (void) {
     return hw_read_lcd (FALSE);
 }
 
-uint8_t hw_read_status (void) {
+muint8 hw_read_status (void) {
     return hw_read_lcd (TRUE);
 }
 
-static void hw_write_lcd (uint8_t aCmd, uint8_t aByte) {
+static void hw_write_lcd (muint8 aCmd, muint8 aByte) {
 #ifdef M_AVR
     /* make sure the LCD module is ready to receive commands */
     while (0x80U & hw_read_status ()) {}
@@ -149,8 +149,8 @@ static void hw_write_lcd (uint8_t aCmd, uint8_t aByte) {
 #endif /* M_PC */
 }
 
-static uint8_t hw_read_lcd (uint8_t aStatus) {
-    uint8_t status;
+static muint8 hw_read_lcd (muint8 aStatus) {
+    muint8 status;
 
 #ifdef M_AVR
     /* pull 'E' (PB1) pin low (LCD module not selected) */
@@ -213,11 +213,11 @@ static uint8_t hw_read_lcd (uint8_t aStatus) {
     return status;
 }
 
-void hw_write_cmd (uint8_t aCmd) {
+void hw_write_cmd (muint8 aCmd) {
     hw_write_lcd (TRUE, aCmd);
 }
 
-void hw_write_data (uint8_t aData) {
+void hw_write_data (muint8 aData) {
     hw_write_lcd (FALSE, aData);
 }
 

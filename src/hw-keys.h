@@ -25,7 +25,7 @@ typedef enum {
  * Callback for the key event
  * @param[in] aCode The code defined by 'THwKeyCode'
  */
-typedef void (*hw_keys_on_key_event) (uint8_t aCode);
+typedef void (*hw_keys_on_key_event) (muint8 aCode);
 
 /**
  * Initialize the keyboard system
