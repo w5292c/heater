@@ -1,4 +1,5 @@
 MCPU=atmega32
+JTAG_PORT=/dev/ttyS0
 
 MCFLAGS=-DF_CPU=16000000UL -DM_AVR -O3 -Wall -Werror -Wextra
 
@@ -22,6 +23,7 @@ test: liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-rtc.o hw-timer.o 
 	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) main-avr.c -o test \
 		liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-rtc.o hw-timer.o hw-keys.o
 	avr-strip $(TARGET_ELF)
+	avr-size -B $(TARGET_ELF)
 
 liblcd.o: config.h fonts.h macros.h types.h fonts.c
 	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) fonts.c -c -o liblcd.o
@@ -49,6 +51,9 @@ hw-keys.o: hw-keys.c hw-keys.h
 
 prg: $(TARGET_FILENAME)
 	jtagice -dATmega32 -e -iftest.hex -pf -vf -R
+
+prg-2: $(TARGET_FILENAME)
+	avarice -p -f $(TARGET_FILENAME) -j $(JTAG_PORT) -P atmega32
 
 clean:
 	rm *.o $(TARGET_ELF) $(TARGET_FILENAME) >/dev/null 2>&1 || true
