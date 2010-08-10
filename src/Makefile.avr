@@ -13,6 +13,8 @@ else
 TARGET_EXT=bin
 endif
 TARGET_FILENAME=$(TARGET_ELF).$(TARGET_EXT)
+DEBUG_EXT=.dbg
+DEBUG_FILENAME=$(TARGET_ELF)$(DEBUG_EXT)
 
 all: $(TARGET_FILENAME)
 
@@ -22,6 +24,7 @@ $(TARGET_FILENAME): $(TARGET_ELF)
 test: liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-rtc.o hw-timer.o hw-keys.o main-avr.c
 	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) main-avr.c -o test \
 		liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-rtc.o hw-timer.o hw-keys.o
+	avr-objcopy --only-keep-debug $(TARGET_ELF) $(DEBUG_FILENAME)
 	avr-strip $(TARGET_ELF)
 	avr-size -B $(TARGET_ELF)
 
@@ -56,7 +59,7 @@ prg-2: $(TARGET_FILENAME)
 	avarice -p -f $(TARGET_FILENAME) -j $(JTAG_PORT) -P atmega32
 
 clean:
-	rm *.o $(TARGET_ELF) $(TARGET_FILENAME) >/dev/null 2>&1 || true
+	rm *.o $(TARGET_ELF) $(TARGET_FILENAME) $(DEBUG_FILENAME) >/dev/null 2>&1 || true
 
 clean-source:
 	rm *~ >/dev/null 2>&1 || true
