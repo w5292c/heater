@@ -29,11 +29,13 @@ static void engine_timer_tick (void);
 
 void engine_init (void) {
     scheduler_add (&engine_tick);
+    hw_timer_init ();
     hw_timer_add_callback (&engine_timer_tick);
 }
 
 void engine_deinit (void) {
     hw_timer_remove_callback (&engine_timer_tick);
+    hw_timer_deinit ();
     scheduler_remove (&engine_tick);
 
     /* deinitialize the LCD interface */
