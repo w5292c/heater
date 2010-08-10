@@ -20,10 +20,26 @@ typedef struct {
  * @param[in] aTimeInfo The retrieved time infomation
  */
 typedef void (*hw_rtc_time_ready) (TRtcTimeInfo *aTimeInfo);
+/**
+ * The client callback to notify that the time info has been written to the RTC
+ * @param[in] mSuccess Success of the operation
+ */
+typedef void (*hw_rtc_time_written) (mbool mSuccess);
 
+/**
+ * Initialize the RTC system
+ */
 void hw_rtc_init (void);
+/**
+ * Deinitialize the RTC system
+ */
 void hw_rtc_deinit (void);
 
+/**
+ * Start request to get time information
+ * @param[in] aCallback The client callback to notify
+ *            that the operation has been finished
+ */
 void hw_rtc_get_time (hw_rtc_time_ready aCallback);
 
 #endif /* __AVR_LCD_PROJECT_HW_RTC_H__ */

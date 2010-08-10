@@ -79,18 +79,33 @@ void hw_rtc_get_time (hw_rtc_time_ready aCallback) {
 }
 
 static muint8 hw_rtc_tick (void) {
-    if (EI2CStateRdDone == TheI2CState || EI2CStateRdDoneError == TheI2CState) {
-        /* the time is ready, inform the client */
+    switch (TheI2CState)
+    {
+    case EI2CStateRdDone:
+    case EI2CStateRdDoneError:
+        {
+        hw_rtc_time_ready callback;
         m_return_val_if_fail (TheCallback, FALSE);
-
-        (*TheCallback) (&TheTimeInfo);
+        /* the time is ready, inform the client */
+        callback = TheCallback;
         TheCallback = NULL;
         TheI2CState = EI2CStateIdle;
-    }
-    else if (EI2CStateWrDone == TheI2CState || EI2CStateWrDoneError == TheI2CState) {
+        if (EI2CStateRdDone == TheI2CState) {
+            (*callback) (&TheTimeInfo);
+        }
+        else {
+            (*callback) (NULL);
+        }
+        }
+        break;
+    case EI2CStateWrDone:
+    case EI2CStateWrDoneError:
         /* the time has been written, inform the client */
         /** @todo implement */
         TheI2CState = EI2CStateIdle;
+        break;
+    default:
+        break;
     }
 
     return FALSE;
