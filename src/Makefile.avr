@@ -1,7 +1,7 @@
 MCPU=atmega32
 JTAG_PORT=/dev/ttyS0
 
-MCFLAGS=-DF_CPU=16000000UL -DM_AVR -O3 -Wall -Werror -Wextra
+MCFLAGS=-DF_CPU=16000000UL -DM_AVR -Os -Wall -Werror -Wextra -g
 
 TARGET_FORMAT=ihex
 #TARGET_FORMAT=binary
