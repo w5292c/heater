@@ -47,7 +47,7 @@ static hw_rtc_time_ready TheCallback;
  * The tack to report to the client when RTC data is ready
  * @return FALSE No more work is needed
  */
-static muint8 hw_rtc_tick (void);
+static mbool hw_rtc_tick (void);
 /**
  * Start reading RTC using I2C protocol
  */
@@ -78,7 +78,7 @@ void hw_rtc_get_time (hw_rtc_time_ready aCallback) {
     hw_i2c_start_read ();
 }
 
-static muint8 hw_rtc_tick (void) {
+static mbool hw_rtc_tick (void) {
     switch (TheI2CState)
     {
     case EI2CStateRdDone:

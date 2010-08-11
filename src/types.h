@@ -19,6 +19,11 @@ typedef uint16_t muint16;
  */
 typedef int32_t mint32;
 typedef uint32_t muint32;
-
+/**
+ * Platform-natural 'int' types
+ */
+typedef mint16 mint;
+typedef muint16 muint;
+typedef muint16 msize;
 
 #endif /* __AVR_LCD_PROJECT_TYPES_H__ */

@@ -21,7 +21,7 @@ static TEngineState TheEngineState = EEngineStateInit;
  * @param[in] aData The engine pointer
  * @return More work is pending
  */
-static muint8 engine_tick (void);
+static mbool engine_tick (void);
 /**
  * 1 KHz timer tick
  */
@@ -42,8 +42,8 @@ void engine_deinit (void) {
     lcd_deinit ();
 }
 
-static muint8 engine_tick (void) {
-    muint8 more = TRUE;
+static mbool engine_tick (void) {
+    mbool more = TRUE;
 
     switch (TheEngineState)
     {
