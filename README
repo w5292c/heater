@@ -5,6 +5,7 @@ Dependency:
 
 Working with avarice:
 $ avarice --program --file test.bin --jtag /dev/ttyS0 :<port>
+$ avarice --mkI --program --file test.hex --jtag /dev/ttyUSB0 --debug
 
 Working with gcc-avr:
 $ avr-gdb
