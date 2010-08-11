@@ -33,7 +33,7 @@ static inline void hw_timer_init_timer0 (void) {
 }
 
 void hw_timer_init (void) {
-    muint8 i;
+    muint i;
 
     TheTimerTickPending = FALSE;
     for (i = 0; i < M_MAX_TIMER_TICKS; i++) {
@@ -50,7 +50,7 @@ void hw_timer_deinit (void) {
 }
 
 void hw_timer_add_callback (hw_timer_callback aCallback) {
-    muint8 i;
+    muint i;
     THwTimerTickInfo *info;
 
     for (i = 0; i < M_MAX_TIMER_TICKS; i++) {
@@ -66,7 +66,7 @@ void hw_timer_add_callback (hw_timer_callback aCallback) {
 }
 
 void hw_timer_remove_callback (hw_timer_callback aCallback) {
-    muint8 i;
+    muint i;
     THwTimerTickInfo *info;
 
     for (i = 0; i < M_MAX_TIMER_TICKS; i++) {
@@ -83,7 +83,7 @@ void hw_timer_remove_callback (hw_timer_callback aCallback) {
 
 static mbool hw_timer_tick (void) {
     if (TheTimerTickPending) {
-        muint8 i;
+        muint i;
         hw_timer_callback callback;
 
         /* dispatch another timer tick */

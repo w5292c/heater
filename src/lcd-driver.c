@@ -114,7 +114,7 @@ void lcd_deinit (void) {
 }
 
 void lcd_flash (void) {
-    muint8 i;
+    muint i;
 
     /* send our local buffers to the LCD module, the first buffer first */
     lcd_set_page (0);
@@ -136,7 +136,7 @@ void lcd_flash (void) {
 }
 
 void lcd_clear (void) {
-    muint8 i;
+    muint i;
 
     for (i = 0; i < M_LCD_BANK_LENGTH; i++) {
         TheDisplayBank1[i] = 0;
@@ -146,9 +146,9 @@ void lcd_clear (void) {
 
 #ifdef M_PC
 static void lcd_debug_show_buffer (void) {
-    muint8 y;
-    muint8 x;
-    muint8 bank;
+    muint y;
+    muint x;
+    muint bank;
 
     for (bank = 0; bank < 2; bank++) {
         for (y = 0; y < 8; y++) {
@@ -181,8 +181,8 @@ static void lcd_debug_show_buffer (void) {
 #endif
 
 void lcd_print_char (muint8 aX, muint8 aY, muint8 aChar) {
-    muint8 x;
-    muint8 y;
+    muint x;
+    muint y;
 
     for (y = 0; y < 14; y++) {
         muint8 image;
@@ -198,8 +198,8 @@ void lcd_print_char (muint8 aX, muint8 aY, muint8 aChar) {
 }
 
 void lcd_paint_char (muint8 aX, muint8 aY, muint8 aChar) {
-    muint8 x;
-    muint8 y;
+    muint x;
+    muint y;
 
     for (y = 0; y < 14; y++) {
         muint8 image;
