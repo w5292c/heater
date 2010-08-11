@@ -1,9 +1,14 @@
 #include "engine.h"
 
 #include "macros.h"
+#include "hw-rtc.h"
 #include "hw-timer.h"
 #include "scheduler.h"
 #include "lcd-driver.h"
+
+#ifdef M_AVR
+#include <string.h>
+#endif /* M_AVR */
 
 typedef enum {
     EEngineStateInit,
@@ -26,14 +31,17 @@ static mbool engine_tick (void);
  * 1 KHz timer tick
  */
 static void engine_timer_tick (void);
+static void engine_rtc_time_ready (const TRtcTimeInfo *aTimeInfo);
 
 void engine_init (void) {
     scheduler_add (&engine_tick);
     hw_timer_init ();
     hw_timer_add_callback (&engine_timer_tick);
+    hw_rtc_init ();
 }
 
 void engine_deinit (void) {
+    hw_rtc_deinit ();
     hw_timer_remove_callback (&engine_timer_tick);
     hw_timer_deinit ();
     scheduler_remove (&engine_tick);
@@ -77,6 +85,7 @@ static mbool engine_tick (void) {
     case EEngineStateState4:
         lcd_flash ();
         TheEngineState = EEngineStateDone;
+        hw_rtc_get_time (&engine_rtc_time_ready);
         break;
     case EEngineStateDone:
         more = FALSE;
@@ -123,4 +132,10 @@ static void engine_timer_tick (void) {
     }
 
     cnt++;
+}
+
+static void engine_rtc_time_ready (const TRtcTimeInfo *aTimeInfo) {
+    TRtcTimeInfo info;
+
+    memcpy (&info, aTimeInfo, sizeof (TRtcTimeInfo));
 }

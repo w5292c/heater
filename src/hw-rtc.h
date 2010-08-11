@@ -19,7 +19,7 @@ typedef struct {
  * The client callback to notify that another timer info is retrieved
  * @param[in] aTimeInfo The retrieved time infomation
  */
-typedef void (*hw_rtc_time_ready) (TRtcTimeInfo *aTimeInfo);
+typedef void (*hw_rtc_time_ready) (const TRtcTimeInfo *aTimeInfo);
 /**
  * The client callback to notify that the time info has been written to the RTC
  * @param[in] mSuccess Success of the operation
