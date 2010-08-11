@@ -1,7 +1,8 @@
 MCPU=atmega32
 JTAG_PORT=/dev/ttyS0
 
-MCFLAGS=-DF_CPU=16000000UL -DM_AVR -Os -Wall -Werror -Wextra -g
+MCFLAGS=-DF_CPU=16000000UL -DM_AVR -Os -Wall -Werror -Wextra -g -W -pedantic \
+	-Wstrict-prototypes -Wundef -std=gnu99
 
 TARGET_FORMAT=ihex
 #TARGET_FORMAT=binary
@@ -22,7 +23,7 @@ $(TARGET_FILENAME): $(TARGET_ELF)
 	avr-objcopy -O $(TARGET_FORMAT) $(TARGET_ELF) $(TARGET_FILENAME)
 
 test: liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-rtc.o hw-timer.o hw-keys.o main-avr.c
-	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) main-avr.c -o test \
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) main-avr.c -o test -Wl,--relax \
 		liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-rtc.o hw-timer.o hw-keys.o
 	avr-objcopy --only-keep-debug $(TARGET_ELF) $(DEBUG_FILENAME)
 	avr-strip $(TARGET_ELF)
