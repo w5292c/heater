@@ -24,7 +24,7 @@ $(TARGET_FILENAME): $(TARGET_ELF)
 
 test: liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-rtc.o hw-i2c.o hw-timer.o \
 	  hw-keys.o main-avr.c
-	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) main-avr.c -o test -Wl,--relax \
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) main-avr.c -o test -Wl,--relax -Wl,--gc-sections \
 		liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-rtc.o hw-i2c.o hw-timer.o \
 		hw-keys.o
 	avr-objcopy --only-keep-debug $(TARGET_ELF) $(DEBUG_FILENAME)

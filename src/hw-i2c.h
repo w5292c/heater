@@ -3,8 +3,6 @@
 
 #include "types.h"
 
-#define M_HW_I2C_MAX_REQUESTS (0x02U)
-
 /**
  * The client callback to notify that read request finished
  * @param[in] aSuccess Success of the read operation
@@ -31,6 +29,7 @@ void hw_i2c_deinit (void);
  * @param[in] aAddress The address of the I2C client to be read
  * @param[in] aBuffer The read buffer
  * @param[in] aSize The number of bytes to read
+ * @note There can only be 1 outstanding read or write request at any given time
  */
 void hw_i2c_read (muint8 aAddress, muint8 *aBuffer, msize aSize, hw_i2c_read_done aCallback);
 /**
@@ -38,6 +37,7 @@ void hw_i2c_read (muint8 aAddress, muint8 *aBuffer, msize aSize, hw_i2c_read_don
  * @param[in] aAddress
  * @param[in] aBuffer
  * @param[in] aSize
+ * @note There can only be 1 outstanding read or write request at any given time
  */
 void hw_i2c_write (muint8 aAddress, const muint8 *aBuffer,
     msize aSize, hw_i2c_write_done aCallback);
