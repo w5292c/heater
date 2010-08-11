@@ -1,14 +1,42 @@
 #include "hw-rtc.h"
 
+#include "hw-i2c.h"
 #include "macros.h"
-#include "scheduler.h"
 
 #ifdef M_AVR
 #include <string.h>
-#include <avr/io.h>
-#include <util/twi.h>
-#include <avr/interrupt.h>
+#include <avr/pgmspace.h>
 #endif /* M_AVR */
+
+/**
+ * States for RTC read/write requests:
+ *
+ *
+ * RTC Read requests:
+ *        [read-time]                  [done]               [done]
+ * (Idle) ----------> (WritingAddress) -----> (ReadingData) -----> (Ready)--
+ *    ^     [done]                              [sync-with-scheduler]      |
+ *    |------------------ ( InformClient ) <--------------------------------
+ *
+ *
+ * RTC Write requests:
+ *        [write-time]                                  [done]
+ * (Idle) -----------> (WritingAddress and WritingData) -----> (Ready)--
+ *    ^     [done]                             [sync-with-scheduler]   |
+ *    |------------------ ( InformClient ) <----------------------------
+ */
+
+typedef enum {
+    /* service states */
+    EHwRtcStateNull = 0,
+    EHwRtcStateIdle,
+    EHwRtcStateCancel,
+    /* read states */
+    EHwRtcStateRdWritingAddress,
+    EHwRtcStateRdReadingData,
+    /* write states */
+    EHwRtcStateWrWritingAddressData,
+} THwRtcState;
 
 /**
  * Preliminary estimation that A0 is '0'
@@ -18,265 +46,119 @@
  * The number of butes to be read
  */
 #define M_RTC_BYTE_TO_READ (0x05)
+#define M_RTC_READ_BUFFER_LENGHT (0x08)
 
-typedef enum {
-    /* system states */
-    EI2CStateIdle,
-    EI2CStateCancelling,
-    /* RTC reading states */
-    EI2CStateRdSendStart1,
-    EI2CStateRdSendSlvWrAddr,
-    EI2CStateRdSendRamAddr,
-    EI2CStateRdSendStart2,
-    EI2CStateRdSendSlvRdAddr,
-    EI2CStateRdReadingBytes,
-    EI2CStateRdReadingBytesLast,
-    EI2CStateRdDone,
-    EI2CStateRdDoneError,
-    /* RTC writing states */
-    EI2CStateWr,
-    EI2CStateWrDone,
-    EI2CStateWrDoneError
-} TI2CState;
-
+static muint8 TheRtcState = EHwRtcStateNull;
 static TRtcTimeInfo TheTimeInfo;
 static muint8 volatile TheI2CState;
-static muint8 volatile TheI2CIndex;
 static hw_rtc_time_ready TheCallback;
-/**
- * The tack to report to the client when RTC data is ready
- * @return FALSE No more work is needed
- */
-static mbool hw_rtc_tick (void);
-/**
- * Start reading RTC using I2C protocol
- */
-static inline void hw_i2c_start_read (void);
+static muint8 TheTimeReadBuffer[M_RTC_READ_BUFFER_LENGHT];
+
+static void hw_rtc_i2c_read_done (mbool aSuccess, muint8 aBytesRead);
+static void hw_rtc_i2c_write_done (mbool aSuccess, muint8 aBytesWritten);
 
 void hw_rtc_init (void) {
+    m_return_if_fail (EHwRtcStateNull == TheRtcState);
+
     TheCallback = NULL;
-    TheI2CState = EI2CStateIdle;
+    TheRtcState = EHwRtcStateIdle;
     memset (&TheTimeInfo, 0, sizeof (TRtcTimeInfo));
 
-    scheduler_add (&hw_rtc_tick);
+    hw_i2c_init ();
 }
 
 void hw_rtc_deinit (void) {
-    scheduler_remove (&hw_rtc_tick);
+    hw_i2c_deinit ();
 
     TheCallback = NULL;
-    TheI2CState = EI2CStateCancelling;
+    TheI2CState = EHwRtcStateCancel;
 }
 
 void hw_rtc_get_time (hw_rtc_time_ready aCallback) {
+    static const muint8 DataAddress[] = {
+        0x00, 0x00
+    };
+
     m_return_if_fail (TheCallback);
-    m_return_if_fail (EI2CStateIdle == TheI2CState);
+    m_return_if_fail (EHwRtcStateIdle == TheI2CState);
 
     TheCallback = aCallback;
     memset (&TheTimeInfo, 0, sizeof (TRtcTimeInfo));
 
-    hw_i2c_start_read ();
+    TheI2CState = EHwRtcStateRdWritingAddress;
+    hw_i2c_write (M_RTC_ADDRESS, DataAddress, 2, &hw_rtc_i2c_write_done);
 }
 
-static mbool hw_rtc_tick (void) {
-    switch (TheI2CState)
-    {
-    case EI2CStateRdDone:
-    case EI2CStateRdDoneError:
-        {
+static inline void hw_rtc_handle_i2c_rd_addr_written (mbool aSuccess, muint8 aBytesWritten) {
+    if (aSuccess && 2 == aBytesWritten) {
+        TheI2CState = EHwRtcStateRdReadingData;
+        hw_i2c_read (M_RTC_ADDRESS,
+            TheTimeReadBuffer, M_RTC_READ_BUFFER_LENGHT, hw_rtc_i2c_read_done);
+    }
+    else {
         hw_rtc_time_ready callback;
-        m_return_val_if_fail (TheCallback, FALSE);
-        /* the time is ready, inform the client */
+
+        /* error happened, reset the state */
         callback = TheCallback;
         TheCallback = NULL;
-        TheI2CState = EI2CStateIdle;
-        if (EI2CStateRdDone == TheI2CState) {
-            (*callback) (&TheTimeInfo);
-        }
-        else {
-            (*callback) (NULL);
-        }
-        }
-        break;
-    case EI2CStateWrDone:
-    case EI2CStateWrDoneError:
-        /* the time has been written, inform the client */
-        /** @todo implement */
-        TheI2CState = EI2CStateIdle;
-        break;
-    default:
-        break;
+        TheI2CState = EHwRtcStateIdle;
+        m_return_if_fail (callback);
+
+        /* notify the client */
+        (*callback) (NULL);
     }
-
-    return FALSE;
 }
 
-static inline void hw_i2c_start_read (void) {
-    /* send the START condition */
-    TWCR = ((1<<TWINT) | (1<<TWSTA) | (1<<TWEN));
-    TheI2CState = EI2CStateRdSendStart1;
-}
-
-/**
- * Handle the event that the START condition is sent
- */
-static inline void hw_i2c_handle_start_transmitted (void) {
-    switch (TheI2CState)
+static void hw_rtc_i2c_write_done (mbool aSuccess, muint8 aBytesWritten) {
+    switch (TheRtcState)
     {
-    case EI2CStateRdSendStart1:
-        TheI2CState = EI2CStateRdSendSlvWrAddr;
-        /* send address (write) request */
-        TWDR = (M_RTC_ADDRESS | TW_WRITE);
-        /* TWI Interface enabled, Enable TWI Interupt and clear the flag to send byte */
-        TWCR = (1<<TWEN)|(1<<TWIE)|(1<<TWINT)|(0<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|(0<<TWWC);
+    case EHwRtcStateRdWritingAddress:
+        hw_rtc_handle_i2c_rd_addr_written (aSuccess, aBytesWritten);
         break;
-    case EI2CStateRdSendStart2:
-        TheI2CState = EI2CStateRdSendSlvRdAddr;
-        /* send address (read) request */
-        TWDR = (M_RTC_ADDRESS | TW_READ);
-        /* TWI Interface enabled, Enable TWI Interupt and clear the flag to send byte */
-        TWCR = (1<<TWEN)|(1<<TWIE)|(1<<TWINT)|(0<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|(0<<TWWC);
-        break;
-    default:
-        /** @todo implement error handling */
-        m_return_if_fail (FALSE);
+    case EHwRtcStateRdReadingData:
+    case EHwRtcStateWrWritingAddressData:
+    case EHwRtcStateNull:
+    case EHwRtcStateIdle:
+    case EHwRtcStateCancel:
+        hw_rtc_handle_i2c_rd_addr_written (FALSE, 0);
         break;
     }
 }
 
-static inline void hw_i2c_handle_slave_address_transmitted (void) {
-    switch (TheI2CState)
-    {
-    case EI2CStateRdSendSlvWrAddr:
-        TheI2CState = EI2CStateRdSendRamAddr;
-        /* read starting the 2st byte (seconds) */
-        TWDR = 0x02U;
-        TWCR = (1<<TWINT)|(1<<TWEN);
-        break;
-    case EI2CStateRdSendSlvRdAddr:
-        TheI2CState = EI2CStateRdReadingBytes;
-        TheI2CIndex = 0;
-        /* TWI Interface enabled;
-           Enable TWI Interupt and clear the flag to read next byte;
-           Send ACK after reception; */
-        TWCR = (1<<TWEN)|(1<<TWIE)|(1<<TWINT)|(1<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|(0<<TWWC);
-        break;
-    default:
-        /** @todo implement error handling */
-        m_return_if_fail (FALSE);
-        break;
+static inline void hw_rtc_handle_i2c_rd_data_ready (mbool aSuccess, muint8 aBytesRead) {
+    hw_rtc_time_ready callback;
+
+    /* error happened, reset the state */
+    TheI2CState = EHwRtcStateIdle;
+    callback = TheCallback;
+    TheCallback = NULL;
+
+    if (aSuccess && M_RTC_READ_BUFFER_LENGHT == aBytesRead) {
+        /** @todo implement parsing the read buffer */
+
+        /* notify the client */
+        m_return_if_fail (callback);
+        (*callback) (&TheTimeInfo);
+    }
+    else {
+        /* notify the client */
+        m_return_if_fail (callback);
+        (*callback) (NULL);
     }
 }
 
-static inline void hw_i2c_handle_data_transmitted (void) {
-    switch (TheI2CState)
+static void hw_rtc_i2c_read_done (mbool aSuccess, muint8 aBytesRead) {
+    switch (TheRtcState)
     {
-    case EI2CStateRdSendRamAddr:
-        TheI2CState = EI2CStateRdSendStart2;
-        /* send the START condition */
-        TWCR = ((1<<TWINT) | (1<<TWSTA) | (1<<TWEN));
+    case EHwRtcStateRdReadingData:
+        hw_rtc_handle_i2c_rd_data_ready (aSuccess, aBytesRead);
         break;
-    default:
-        /** @todo implement error handling */
-        m_return_if_fail (FALSE);
-        break;
-    }
-}
-
-static inline void hw_i2c_handle_data_received_ack (void) {
-    muint8 data;
-
-    switch (TheI2CState)
-    {
-    case EI2CStateRdReadingBytes:
-        data = TWDR;
-        switch (TheI2CIndex)
-        {
-        case 0:
-            TheTimeInfo.mSeconds = data;
-            break;
-        case 1:
-            TheTimeInfo.mMinute = data;
-            break;
-        case 2:
-            TheTimeInfo.mHour = data;
-            break;
-        case 3:
-            TheTimeInfo.mDay = data;
-            TheTimeInfo.mYear = data;
-            break;
-        default:
-            m_return_if_fail (FALSE && TheI2CIndex);
-            break;
-        }
-        if ((M_RTC_BYTE_TO_READ - 1) == ++TheI2CIndex) {
-            /* request reading the last byte */
-            /* TWI Interface enabled */
-            TheI2CState = EI2CStateRdReadingBytesLast;
-            TWCR = (1<<TWEN)|
-                /* Enable TWI Interupt and clear the flag to read next byte */
-                (1<<TWIE)|(1<<TWINT)|
-                /* Send NACK after reception */
-                (0<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|
-                (0<<TWWC);
-        }
-        else {
-            /* request reading another byte */
-            /* TWI Interface enabled */
-            TWCR = (1<<TWEN)|
-                /* Enable TWI Interupt and clear the flag to read next byte */
-                (1<<TWIE)|(1<<TWINT)|
-                /* Send ACK after reception */
-                (1<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|
-                (0<<TWWC);
-        }
-        break;
-    default:
-        /** @todo implement error handling */
-        m_return_if_fail (FALSE);
-        break;
-    }
-}
-
-static inline void hw_i2c_handle_data_received_nack (void) {
-    muint8 data;
-
-    switch (TheI2CState)
-    {
-    case EI2CStateRdReadingBytesLast:
-        data = TWDR;
-        TheTimeInfo.mMonth = data;
-        /* TWI Interface enabled;
-           Disable TWI Interrupt and clear the flag;
-           Initiate a STOP condition. */
-        TheI2CState = EI2CStateRdDone;
-        TWCR = (1<<TWEN)|(0<<TWIE)|(1<<TWINT)|(0<<TWEA)|(0<<TWSTA)|(1<<TWSTO)|(0<<TWWC);
-        break;
-    default:
-        /** @todo implement error handling */
-        m_return_if_fail (FALSE);
-        break;
-    }
-}
-
-ISR(TWI_vect) {
-    switch (TW_STATUS)
-    {
-    case TW_START:
-    case TW_REP_START:
-        hw_i2c_handle_start_transmitted ();
-        break;
-    case TW_MT_SLA_ACK:
-        hw_i2c_handle_slave_address_transmitted ();
-        break;
-    case TW_MT_DATA_ACK:
-        hw_i2c_handle_data_transmitted ();
-        break;
-    case TW_MR_DATA_ACK:
-        hw_i2c_handle_data_received_ack ();
-        break;
-    case TW_MR_DATA_NACK:
-        hw_i2c_handle_data_received_nack ();
+    case EHwRtcStateWrWritingAddressData:
+    case EHwRtcStateRdWritingAddress:
+    case EHwRtcStateNull:
+    case EHwRtcStateIdle:
+    case EHwRtcStateCancel:
+        hw_rtc_handle_i2c_rd_data_ready (FALSE, 0);
         break;
     }
 }
