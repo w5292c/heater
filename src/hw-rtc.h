@@ -37,9 +37,14 @@ void hw_rtc_deinit (void);
 
 /**
  * Start request to get time information
- * @param[in] aCallback The client callback to notify
- *            that the operation has been finished
+ * @param[in] aCallback The client callback to notify that the operation has been finished
  */
 void hw_rtc_get_time (hw_rtc_time_ready aCallback);
+/**
+ * Start request to set time information
+ * @param[in aTime The time information to be set
+ * @param[in] aCallback The client callback to notify that the operation has been finished
+ */
+void hw_rtc_set_time (const TRtcTimeInfo *aTime, hw_rtc_time_written aCallback);
 
 #endif /* __AVR_LCD_PROJECT_HW_RTC_H__ */
