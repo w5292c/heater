@@ -32,15 +32,19 @@ static mbool engine_tick (void);
  */
 static void engine_timer_tick (void);
 static void engine_rtc_time_ready (const TRtcTimeInfo *aTimeInfo);
+static void engine_rtc_timer (void);
+
 
 void engine_init (void) {
     scheduler_add (&engine_tick);
     hw_timer_init ();
     hw_timer_add_callback (&engine_timer_tick);
     hw_rtc_init ();
+    hw_rtc_set_rtc_timer (&engine_rtc_timer);
 }
 
 void engine_deinit (void) {
+    hw_rtc_set_rtc_timer (NULL);
     hw_rtc_deinit ();
     hw_timer_remove_callback (&engine_timer_tick);
     hw_timer_deinit ();
@@ -131,7 +135,12 @@ static void m_hw_i2c_write_done (mbool aSuccess, muint8 aBytesWritten) {
 }
 #endif
 
+static void engine_rtc_timer (void) {
+    hw_rtc_get_time (&engine_rtc_time_ready);
+}
+
 static void engine_timer_tick (void) {
+#if 0
     static muint16 cnt = 0;
 
 #if 0
@@ -146,6 +155,7 @@ static void engine_timer_tick (void) {
     }
 
     cnt++;
+#endif
 }
 
 static void engine_rtc_time_ready (const TRtcTimeInfo *aTimeInfo) {

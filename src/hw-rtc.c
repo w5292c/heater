@@ -53,6 +53,7 @@ typedef enum {
 
 static muint8 TheRtcState = EHwRtcStateNull;
 static mbool volatile TheRtcEvent = FALSE;
+static hw_rtc_timer TheRtcCallback = NULL;
 
 static union {
     hw_rtc_time_ready mRdFunc;
@@ -244,9 +245,16 @@ static void hw_rtc_i2c_read_done (mbool aSuccess, muint8 aBytesRead) {
     }
 }
 
+void hw_rtc_set_rtc_timer (hw_rtc_timer aCallback) {
+    TheRtcCallback = aCallback;
+}
+
 static mbool hw_rtc_sched_tick (void) {
     if (TheRtcEvent) {
         /* now we can inform the client */
+        if (TheRtcCallback) {
+            (*TheRtcCallback) ();
+        }
 
         /* reset the flag */
         TheRtcEvent = FALSE;
