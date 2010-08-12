@@ -2,10 +2,12 @@
 
 #include "hw-i2c.h"
 #include "macros.h"
+#include "scheduler.h"
 
 #ifdef M_AVR
 #include <string.h>
 #include <avr/pgmspace.h>
+#include <avr/interrupt.h>
 #endif /* M_AVR */
 
 /**
@@ -50,6 +52,8 @@ typedef enum {
 #define M_RTC_READ_BUFFER_LENGHT (0x08)
 
 static muint8 TheRtcState = EHwRtcStateNull;
+static mbool volatile TheRtcEvent = FALSE;
+
 static union {
     hw_rtc_time_ready mRdFunc;
     hw_rtc_time_written mWrFunc;
@@ -61,19 +65,28 @@ static const muint8 TheRtcDataAddressStart[] M_FLASH = {
 
 static void hw_rtc_i2c_read_done (mbool aSuccess, muint8 aBytesRead);
 static void hw_rtc_i2c_write_done (mbool aSuccess, muint8 aBytesWritten);
+/**
+ * The scheduler tick
+ * @return TRUE if more work is already available
+ */
+static mbool hw_rtc_sched_tick (void);
 
 void hw_rtc_init (void) {
     m_return_if_fail (EHwRtcStateNull == TheRtcState);
 
     TheCallback.mRdFunc = NULL;
     TheRtcState = EHwRtcStateIdle;
+    scheduler_add (&hw_rtc_sched_tick);
 
     hw_i2c_init ();
+    MCUCR = (muint8)(1<<ISC11) | (1<<ISC10);
+    GICR |= (muint8)(1<<INT1);
 }
 
 void hw_rtc_deinit (void) {
     hw_i2c_deinit ();
 
+    scheduler_remove (&hw_rtc_sched_tick);
     TheCallback.mRdFunc = NULL;
     TheRtcState = EHwRtcStateCancel;
 }
@@ -229,4 +242,19 @@ static void hw_rtc_i2c_read_done (mbool aSuccess, muint8 aBytesRead) {
         hw_rtc_handle_i2c_rd_data_ready (FALSE, 0);
         break;
     }
+}
+
+static mbool hw_rtc_sched_tick (void) {
+    if (TheRtcEvent) {
+        /* now we can inform the client */
+
+        /* reset the flag */
+        TheRtcEvent = FALSE;
+    }
+
+    return FALSE;
+}
+
+ISR (INT1_vect) {
+    TheRtcEvent = TRUE;
 }

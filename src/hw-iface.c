@@ -50,7 +50,8 @@ void hw_init (void) {
     /* Define PA0..PA3 and PD4..PD7 pins as inputs for now */
     PORTA = 0x00U;
     DDRA &= ~((1<<DDA0) | (1<<DDA1) | (1<<DDA2) | (1<<DDA3));
-    PORTD = 0x00U;
+    /* Pull-up for the external interrupt 1 */
+    PORTD = (1<<PD3);
     DDRD &= ~((1<<DDD4) | (1<<DDD5) | (1<<DDD6) | (1<<DDD7));
     /* Define PB0, PB1, PC6 and PC7 pins as outputs */
     PORTB = 0x00U;
@@ -103,7 +104,7 @@ static void hw_write_lcd (muint8 aCmd, muint8 aByte) {
     DDRD |= ((1<<DDD4) | (1<<DDD5) | (1<<DDD6) | (1<<DDD7));
     /* send the data byte out */
     PORTA = (aByte & 0x0FU);
-    PORTD = (aByte & 0xF0U);
+    PORTD = (aByte & 0xF0U)|(1<<PD3);
     /* Sync + 400 ns delay */
     asm volatile ("nop\n" ::);
     asm volatile ("nop\n" ::);
@@ -126,7 +127,7 @@ static void hw_write_lcd (muint8 aCmd, muint8 aByte) {
     DDRA &= ~((1<<DDA0) | (1<<DDA1) | (1<<DDA2) | (1<<DDA3));
     DDRD &= ~((1<<DDD4) | (1<<DDD5) | (1<<DDD6) | (1<<DDD7));
     PORTA = 0x00U;
-    PORTD = 0x00U;
+    PORTD = (1<<PD3);
     /* Sync + 400 ns delay */
     asm volatile ("nop\n" ::);
     asm volatile ("nop\n" ::);
