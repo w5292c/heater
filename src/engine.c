@@ -85,7 +85,6 @@ static mbool engine_tick (void) {
     case EEngineStateState4:
         lcd_flash ();
         TheEngineState = EEngineStateDone;
-        hw_rtc_get_time (&engine_rtc_time_ready);
         break;
     case EEngineStateDone:
         more = FALSE;
@@ -95,39 +94,54 @@ static mbool engine_tick (void) {
     return more;
 }
 
-static void engine_timer_tick (void) {
-    static muint16 cnt = 0;
+#if 0
+#include "hw-i2c.h"
 
-    if (1000 == cnt) {
+static muint8 TheTempBuffer[3] = {
+    0x07, 0x10
+};
+
+static void m_hw_i2c_write_done (mbool aSuccess, muint8 aBytesWritten) {
+    if (aSuccess && 2 == aBytesWritten) {
         const muint8 sh = 2;
 
         lcd_clear ();
-        lcd_print_char (0 + sh, 1, 'A');
-        lcd_paint_char (8 + sh, 1, 'n');
-        lcd_print_char (16 + sh, 1, 'o');
-        lcd_paint_char (24 + sh, 1, 't');
-        lcd_print_char (32 + sh, 1, 'h');
-        lcd_paint_char (40 + sh, 1, 'e');
-        lcd_paint_char (48 + sh, 1, 'r');
-        lcd_set_pixel (0, 0, TRUE);
-        lcd_set_pixel (0, 15, TRUE);
-        lcd_set_pixel (60, 0, TRUE);
-        lcd_set_pixel (60, 15, TRUE);
+        lcd_print_char (0 + sh, 1, 'X');
+        lcd_paint_char (8 + sh, 1, 'X');
+        lcd_print_char (16 + sh, 1, 'Y');
+        lcd_paint_char (24 + sh, 1, 'Y');
+        lcd_print_char (32 + sh, 1, 'Z');
+        lcd_paint_char (40 + sh, 1, 'Z');
+        lcd_paint_char (48 + sh, 1, '!');
         lcd_flash ();
     }
-    else if (2000 == cnt) {
-        const muint8 sh = 7;
+    else {
+        const muint8 sh = 2;
 
         lcd_clear ();
-        lcd_print_char (0 + sh, 1, 'H');
-        lcd_paint_char (8 + sh, 1, 'e');
-        lcd_print_char (16 + sh, 1, 'l');
-        lcd_paint_char (24 + sh, 1, 'l');
-        lcd_print_char (32 + sh, 1, 'o');
-        lcd_paint_char (40 + sh, 1, '!');
+        lcd_print_char (0 + sh, 1, 'E');
+        lcd_paint_char (8 + sh, 1, 'R');
+        lcd_print_char (16 + sh, 1, 'R');
+        lcd_paint_char (24 + sh, 1, 'O');
+        lcd_print_char (32 + sh, 1, 'R');
+        lcd_paint_char (40 + sh, 1, 'R');
+        lcd_paint_char (48 + sh, 1, '!');
         lcd_flash ();
+    }
+}
+#endif
 
-        /* reset the static counter */
+static void engine_timer_tick (void) {
+    static muint16 cnt = 0;
+
+#if 0
+    if (0 == cnt) {
+        hw_i2c_write (0xD0U, bb, 2, &m_hw_i2c_write_done);
+    }
+#endif
+
+    if (1000 == cnt) {
+        hw_rtc_get_time (&engine_rtc_time_ready);
         cnt = 0;
     }
 
@@ -135,7 +149,34 @@ static void engine_timer_tick (void) {
 }
 
 static void engine_rtc_time_ready (const TRtcTimeInfo *aTimeInfo) {
-    TRtcTimeInfo info;
+    static muint8 n = 0;
 
-    memcpy (&info, aTimeInfo, sizeof (TRtcTimeInfo));
+    m_return_if_fail (aTimeInfo);
+
+    if (0x01U & ++n) {
+        /* show time */
+        lcd_clear ();
+        lcd_print_char (0, 1, '0' + ((aTimeInfo->mHour&0xF0U)>>4));
+        lcd_paint_char (8, 1, '0' + ((aTimeInfo->mHour&0x0FU)));
+        lcd_print_char (15, 1, ':');
+        lcd_paint_char (22, 1, '0' + ((aTimeInfo->mMinute&0xF0U)>>4));
+        lcd_print_char (30, 1, '0' + ((aTimeInfo->mMinute&0x0FU)));
+        lcd_paint_char (37, 1, ':');
+        lcd_paint_char (44, 1, '0' + ((aTimeInfo->mSeconds&0xF0U)>>4));
+        lcd_paint_char (52, 1, '0' + ((aTimeInfo->mSeconds&0x0FU)));
+        lcd_flash ();
+    }
+    else {
+        /* show data */
+        lcd_clear ();
+        lcd_print_char (0, 1, 'D');
+        lcd_paint_char (8, 1, ':');
+        /*lcd_print_char (16, 1, '0');*/
+        lcd_paint_char (20, 1, '0' + ((aTimeInfo->mMonth&0xF0U)>>4));
+        lcd_print_char (28, 1, '0' + ((aTimeInfo->mMonth&0x0FU)));
+        lcd_paint_char (36, 1, '-');
+        lcd_paint_char (44, 1, '0' + ((aTimeInfo->mDay&0xF0U)>>4));
+        lcd_paint_char (52, 1, '0' + ((aTimeInfo->mDay&0x0FU)));
+        lcd_flash ();
+    }
 }
