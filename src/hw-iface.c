@@ -55,7 +55,7 @@ void hw_init (void) {
     /* Define PB0, PB1, PC6 and PC7 pins as outputs */
     PORTB = 0x00U;
     DDRB |= (1<<DDB0) | (1<<DDB1);
-    PORTC = 0x00U;
+    PORTC = 0x03U;
     DDRC |= (1<<DDC6) | (1<<DDC7);
 #endif /* M_AVR */
 
