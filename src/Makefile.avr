@@ -27,7 +27,7 @@ test: liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-rtc.o hw-i2c.o hw
 	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) main-avr.c -o test \
 		liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-rtc.o hw-i2c.o hw-timer.o \
 		hw-keys.o
-	#avr-objcopy --only-keep-debug $(TARGET_ELF) $(DEBUG_FILENAME)
+	avr-objcopy --only-keep-debug $(TARGET_ELF) $(DEBUG_FILENAME)
 	#avr-strip $(TARGET_ELF)
 	avr-size -B $(TARGET_ELF)
 
