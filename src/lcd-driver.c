@@ -114,25 +114,42 @@ void lcd_deinit (void) {
 }
 
 void lcd_flash (void) {
-    muint i;
+    muint8 i;
+    /**
+     * The the current screen number
+     * Possible values:
+     * 0 - The visible lines:  0..15;
+     * 1 - The visible lines: 16..31;
+     */
+    static muint8 current_screen = TRUE;
 
     /* send our local buffers to the LCD module, the first buffer first */
-    lcd_set_page (0);
+    lcd_set_page (current_screen ? 2 : 0);
     lcd_set_address (0);
     for (i = 0; i < M_LCD_BANK_LENGTH; i++) {
         hw_write_data (TheDisplayBank1[i]);
     }
 
     /* and the other one the second */
-    lcd_set_page (1);
+    lcd_set_page (current_screen ? 3 : 1);
     lcd_set_address (0);
     for (i = 0; i < M_LCD_BANK_LENGTH; i++) {
         hw_write_data (TheDisplayBank2[i]);
     }
 
+    /* switch the current screen */
+    lcd_set_start_line (current_screen ? 16 : 0);
+
 #ifdef M_PC
     lcd_debug_show_buffer ();
 #endif
+    /* Prepare current_screen for the next flash request */
+    if (current_screen) {
+        current_screen = FALSE;
+    }
+    else {
+        current_screen = TRUE;
+    }
 }
 
 void lcd_clear (void) {
