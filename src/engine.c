@@ -98,64 +98,11 @@ static mbool engine_tick (void) {
     return more;
 }
 
-#if 0
-#include "hw-i2c.h"
-
-static muint8 TheTempBuffer[3] = {
-    0x07, 0x10
-};
-
-static void m_hw_i2c_write_done (mbool aSuccess, muint8 aBytesWritten) {
-    if (aSuccess && 2 == aBytesWritten) {
-        const muint8 sh = 2;
-
-        lcd_clear ();
-        lcd_print_char (0 + sh, 1, 'X');
-        lcd_paint_char (8 + sh, 1, 'X');
-        lcd_print_char (16 + sh, 1, 'Y');
-        lcd_paint_char (24 + sh, 1, 'Y');
-        lcd_print_char (32 + sh, 1, 'Z');
-        lcd_paint_char (40 + sh, 1, 'Z');
-        lcd_paint_char (48 + sh, 1, '!');
-        lcd_flash ();
-    }
-    else {
-        const muint8 sh = 2;
-
-        lcd_clear ();
-        lcd_print_char (0 + sh, 1, 'E');
-        lcd_paint_char (8 + sh, 1, 'R');
-        lcd_print_char (16 + sh, 1, 'R');
-        lcd_paint_char (24 + sh, 1, 'O');
-        lcd_print_char (32 + sh, 1, 'R');
-        lcd_paint_char (40 + sh, 1, 'R');
-        lcd_paint_char (48 + sh, 1, '!');
-        lcd_flash ();
-    }
-}
-#endif
-
 static void engine_rtc_timer (void) {
     hw_rtc_get_time (&engine_rtc_time_ready);
 }
 
 static void engine_timer_tick (void) {
-#if 0
-    static muint16 cnt = 0;
-
-#if 0
-    if (0 == cnt) {
-        hw_i2c_write (0xD0U, bb, 2, &m_hw_i2c_write_done);
-    }
-#endif
-
-    if (1000 == cnt) {
-        hw_rtc_get_time (&engine_rtc_time_ready);
-        cnt = 0;
-    }
-
-    cnt++;
-#endif
 }
 
 static void engine_rtc_time_ready (const TRtcTimeInfo *aTimeInfo) {
