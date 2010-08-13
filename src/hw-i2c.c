@@ -65,8 +65,8 @@ void hw_i2c_init (void) {
     TheI2CState = EI2CStateIdle;
 
     scheduler_add (&hw_i2c_sched_tick);
-    TWBR = 152U;
-    TWDR = 0xFF;
+    TWBR = 0x0CU;
+    TWDR = 0xFFU;
     TWCR = (1<<TWEN)|(0<<TWIE)|(0<<TWINT)|(0<<TWEA)|(0<<TWSTA)|(0<<TWSTO)|(0<<TWWC);
     PORTC |= (muint8)((1<<PC0) | (1<<PC1));
 }
