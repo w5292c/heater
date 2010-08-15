@@ -14,17 +14,7 @@
 
 static muint8 TheCurrentState = EEngineStateNull;
 static TEngineStateInterface TheStates[EEngineStateLast] = {{NULL,NULL,NULL,NULL,NULL,NULL},};
-
-typedef enum {
-    EEngineStatePrivInit,
-    EEngineStatePrivState1,
-    EEngineStatePrivState2,
-    EEngineStatePrivState3,
-    EEngineStatePrivState4,
-    EEngineStatePrivDone
-} TEngineStatePriv;
-
-static muint8 TheEnginePrivState = EEngineStatePrivInit;
+static TRtcTimeInfo TheCurrentTime = {0,0,0,0,0,0,0};
 
 /**
  * The task scheduler tick for the engine
@@ -36,9 +26,10 @@ static mbool engine_tick (void);
  * 1 KHz timer tick
  */
 static void engine_timer_tick (void);
-static void engine_rtc_time_ready (const TRtcTimeInfo *aTimeInfo);
 static void engine_rtc_timer (void);
 static void engine_on_key_event (muint8 aCode);
+static void engine_show_hello (void);
+static void engine_rtc_time_ready (const TRtcTimeInfo *aTimeInfo);
 
 void engine_init (void) {
     scheduler_add (&engine_tick);
@@ -48,9 +39,14 @@ void engine_init (void) {
     hw_rtc_set_rtc_timer (&engine_rtc_timer);
     hw_keys_init ();
     hw_keys_add_key_event_handler (&engine_on_key_event);
+    lcd_init ();
+    engine_show_hello ();
 
     /* the last thing, initialize the states */
     engine_state_idle_init ();
+
+    /* Request initial state */
+    engine_request_state (EEngineStateIdle);
 }
 
 void engine_deinit (void) {
@@ -102,87 +98,42 @@ void engine_request_state (muint8 aNewState) {
     }
 }
 
+const TRtcTimeInfo *engine_get_current_time (void) {
+    return &TheCurrentTime;
+}
+
 static mbool engine_tick (void) {
-    mbool more = TRUE;
+    engine_state_tick tick;
 
-    switch (TheEnginePrivState)
-    {
-    case EEngineStatePrivInit:
-        lcd_init ();
-        TheEnginePrivState = EEngineStatePrivState1;
-        break;
-    case EEngineStatePrivState1:
-        lcd_clear ();
-        TheEnginePrivState = EEngineStatePrivState2;
-        break;
-    case EEngineStatePrivState2:
-        {
-        muint8 sh = 7;
-        lcd_print_char (0 + sh, 1, 'H');
-        lcd_paint_char (8 + sh, 1, 'e');
-        lcd_print_char (16 + sh, 1, 'l');
-        lcd_paint_char (24 + sh, 1, 'l');
-        lcd_print_char (32 + sh, 1, 'o');
-        lcd_paint_char (40 + sh, 1, '!');
-        }
-        TheEnginePrivState = EEngineStatePrivState3;
-        break;
-    case EEngineStatePrivState3:
-        lcd_set_pixel (0, 0, TRUE);
-        lcd_set_pixel (0, 15, TRUE);
-        lcd_set_pixel (60, 0, TRUE);
-        lcd_set_pixel (60, 15, TRUE);
-        TheEnginePrivState = EEngineStatePrivState4;
-        break;
-    case EEngineStatePrivState4:
-        lcd_flash ();
-        TheEnginePrivState = EEngineStatePrivDone;
-        break;
-    case EEngineStatePrivDone:
-        more = FALSE;
-        break;
-    };
+    tick = TheStates[TheCurrentState].mTick;
+    if (tick) {
+        (*tick) ();
+    }
 
-    return more;
+    return TRUE;
 }
 
 static void engine_rtc_timer (void) {
     hw_rtc_get_time (&engine_rtc_time_ready);
 }
 
-static void engine_timer_tick (void) {
+static void engine_rtc_time_ready (const TRtcTimeInfo *aTimeInfo) {
+    engine_state_rtc_timer rtc_timer;
+
+    memcpy (&TheCurrentTime, aTimeInfo, sizeof (TRtcTimeInfo));
+
+    rtc_timer = TheStates[TheCurrentState].mRtcTimer;
+    if (rtc_timer) {
+        (*rtc_timer) ();
+    }
 }
 
-static void engine_rtc_time_ready (const TRtcTimeInfo *aTimeInfo) {
-    static muint8 n = 0;
+static void engine_timer_tick (void) {
+    engine_state_timer timer;
 
-    m_return_if_fail (aTimeInfo);
-
-    if (0x01U & ++n) {
-        /* show time */
-        lcd_clear ();
-        lcd_print_char (0, 1, '0' + ((aTimeInfo->mHour&0xF0U)>>4));
-        lcd_paint_char (8, 1, '0' + ((aTimeInfo->mHour&0x0FU)));
-        lcd_print_char (15, 1, ':');
-        lcd_paint_char (22, 1, '0' + ((aTimeInfo->mMinute&0xF0U)>>4));
-        lcd_print_char (30, 1, '0' + ((aTimeInfo->mMinute&0x0FU)));
-        lcd_paint_char (37, 1, ':');
-        lcd_paint_char (44, 1, '0' + ((aTimeInfo->mSeconds&0xF0U)>>4));
-        lcd_paint_char (52, 1, '0' + ((aTimeInfo->mSeconds&0x0FU)));
-        lcd_flash ();
-    }
-    else {
-        /* show data */
-        lcd_clear ();
-        lcd_print_char (0, 1, 'D');
-        lcd_paint_char (8, 1, ':');
-        /*lcd_print_char (16, 1, '0');*/
-        lcd_paint_char (20, 1, '0' + ((aTimeInfo->mMonth&0xF0U)>>4));
-        lcd_print_char (28, 1, '0' + ((aTimeInfo->mMonth&0x0FU)));
-        lcd_paint_char (36, 1, '-');
-        lcd_paint_char (44, 1, '0' + ((aTimeInfo->mDay&0xF0U)>>4));
-        lcd_paint_char (52, 1, '0' + ((aTimeInfo->mDay&0x0FU)));
-        lcd_flash ();
+    timer = TheStates[TheCurrentState].mTimer;
+    if (timer) {
+        (*timer) ();
     }
 }
 
@@ -193,24 +144,21 @@ static void engine_on_key_event (muint8 aCode) {
     if (key_event) {
         (*key_event) (aCode);
     }
+}
 
-#if 0
-    if (EHwKeyCodeKey1 == aCode) {
-        switch (TheEngineMode)
-        {
-        case EEngineModeIdle:
-            TheEngineMode = EEngineModeTimeSet;
-            break;
-        case EEngineModeTimeSet:
-            TheEngineMode = EEngineModeDateSet;
-            break;
-        case EEngineModeDateSet:
-            TheEngineMode = EEngineModeControl;
-            break;
-        case EEngineModeControl:
-            TheEngineMode = EEngineModeIdle;
-            break;
-        }
-    }
-#endif
+static void engine_show_hello (void) {
+    const muint8 sh = 7;
+
+    lcd_clear ();
+    lcd_print_char (0 + sh, 1, 'H');
+    lcd_paint_char (8 + sh, 1, 'e');
+    lcd_print_char (16 + sh, 1, 'l');
+    lcd_paint_char (24 + sh, 1, 'l');
+    lcd_print_char (32 + sh, 1, 'o');
+    lcd_paint_char (40 + sh, 1, '!');
+    lcd_set_pixel (0, 0, TRUE);
+    lcd_set_pixel (0, 15, TRUE);
+    lcd_set_pixel (60, 0, TRUE);
+    lcd_set_pixel (60, 15, TRUE);
+    lcd_flash ();
 }

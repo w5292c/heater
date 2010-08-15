@@ -1,7 +1,7 @@
 #ifndef __AVR_LCD_PROJECT_ENGINE_H__
 #define __AVR_LCD_PROJECT_ENGINE_H__
 
-#include "types.h"
+#include "hw-rtc.h"
 
 typedef enum {
     EEngineStateIdle = 0,
@@ -44,5 +44,9 @@ void engine_register_state (muint8 aEngineState, TEngineStateInterface *aInterfa
  * Request state transition
  */
 void engine_request_state (muint8 aNewState);
+/**
+ * Get the current time
+ */
+const TRtcTimeInfo *engine_get_current_time (void);
 
 #endif /* __AVR_LCD_PROJECT_ENGINE_H__ */
