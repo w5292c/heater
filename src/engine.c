@@ -1,6 +1,7 @@
 #include "engine.h"
 
 #include "macros.h"
+#include "editor.h"
 #include "hw-rtc.h"
 #include "hw-keys.h"
 #include "hw-timer.h"
@@ -42,6 +43,7 @@ void engine_init (void) {
     hw_keys_add_key_event_handler (&engine_on_key_event);
     lcd_init ();
     engine_show_hello ();
+    editor_init ();
 
     /* the last thing, initialize the states */
     engine_state_idle_init ();
@@ -56,6 +58,7 @@ void engine_deinit (void) {
     engine_state_alarm_deinit ();
     engine_state_idle_deinit ();
 
+    editor_deinit ();
     hw_keys_deinit ();
     hw_keys_remove_key_event_handler (&engine_on_key_event);
     hw_rtc_set_rtc_timer (NULL);
@@ -101,7 +104,14 @@ void engine_request_state (muint8 aNewState) {
 }
 
 const TRtcTimeInfo *engine_get_current_time (void) {
-    return &TheCurrentTime;
+    const TRtcTimeInfo KNullTime = {0,0,0,0,0,0,0};
+
+    if (0 == memcmp (&KNullTime, &TheCurrentTime, sizeof (TRtcTimeInfo))) {
+        return NULL;
+    }
+    else {
+        return &TheCurrentTime;
+    }
 }
 
 static mbool engine_tick (void) {

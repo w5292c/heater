@@ -30,6 +30,7 @@ void engine_state_idle_deinit (void) {
 }
 
 static void state_idle_enter (void) {
+    state_idle_rtc_timer ();
 }
 
 static void state_idle_leave (void) {
@@ -44,6 +45,7 @@ static void state_idle_timer (void) {
 static void state_idle_rtc_timer (void) {
     static muint8 n = 0;
     const TRtcTimeInfo *time = engine_get_current_time ();
+    m_return_if_fail (time);
 
     if (0x01U & ++n) {
         /* show time */

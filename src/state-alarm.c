@@ -1,13 +1,23 @@
 #include "state-alarm.h"
 
-#include "state-idle.h"
-
+#include "editor.h"
 #include "engine.h"
 #include "macros.h"
-#include "hw-rtc.h"
+#include "hw-keys.h"
 #include "lcd-driver.h"
 
-static muint16 TheInactivity = 0;
+/**
+ * The internal state for the alarm state
+ */
+typedef enum {
+    EAlarmStateNull = 0,
+    EAlarmStateIdle,
+    EAlarmStateIntro,
+    EAlarmStateTimeEditor
+} TAlarmState;
+
+static muint8 TheAlarmState = EAlarmStateNull;
+static muint16 TheInactivityTimer = 0;
 
 static void state_alarm_enter (void);
 static void state_alarm_leave (void);
@@ -15,25 +25,28 @@ static void state_alarm_tick (void);
 static void state_alarm_timer (void);
 static void state_alarm_rtc_timer (void);
 static void state_alarm_key_event (muint8 aCode);
-
+static void state_alarm_editor_done (mbool aConfirmed, TRtcTimeInfo *aInfo);
 
 void engine_state_alarm_init (void) {
-    TEngineStateInterface idle_api;
+    TEngineStateInterface alarm_api;
 
-    idle_api.mEnter = state_alarm_enter;
-    idle_api.mLeave = state_alarm_leave;
-    idle_api.mTick = state_alarm_tick;
-    idle_api.mTimer = state_alarm_timer;
-    idle_api.mRtcTimer = state_alarm_rtc_timer;
-    idle_api.mKeyEvent = state_alarm_key_event;
+    alarm_api.mEnter = state_alarm_enter;
+    alarm_api.mLeave = state_alarm_leave;
+    alarm_api.mTick = state_alarm_tick;
+    alarm_api.mTimer = state_alarm_timer;
+    alarm_api.mRtcTimer = state_alarm_rtc_timer;
+    alarm_api.mKeyEvent = state_alarm_key_event;
+    TheAlarmState = EAlarmStateIdle;
 
-    engine_register_state (EEngineStateAlarm, &idle_api);
+    engine_register_state (EEngineStateAlarm, &alarm_api);
 }
 
 void engine_state_alarm_deinit (void) {
 }
 
 static void state_alarm_enter (void) {
+    TheAlarmState = EAlarmStateIntro;
+
     lcd_clear ();
     lcd_print_char (0, 1, 'A');
     lcd_paint_char (8, 1, 'l');
@@ -44,17 +57,41 @@ static void state_alarm_enter (void) {
 }
 
 static void state_alarm_leave (void) {
+    TheInactivityTimer = 0;
+    TheAlarmState = EAlarmStateIdle;
 }
 
 static void state_alarm_tick (void) {
 }
 
 static void state_alarm_timer (void) {
-    ++TheInactivity;
-    if (4000 == TheInactivity) {
-        TheInactivity = 0;
+    switch (TheAlarmState)
+    {
+    case EAlarmStateIntro:
+        if (1000 == TheInactivityTimer) {
+            TRtcTimeInfo info;
+            info.mMinute = 0x52;
+            info.mHour = 0x15;
+
+            TheInactivityTimer = 0;
+            editor_activate (0, &state_alarm_editor_done, &info);
+            TheAlarmState = EAlarmStateTimeEditor;
+        }
+        break;
+    case EAlarmStateTimeEditor:
+        if (3000 == TheInactivityTimer) {
+            engine_request_state (EEngineStateIdle);
+            editor_deactivate ();
+        }
+        break;
+    }
+
+    ++TheInactivityTimer;
+    if (4000 == TheInactivityTimer) {
+        TheInactivityTimer = 0;
 
         engine_request_state (EEngineStateIdle);
+        editor_deactivate ();
     }
 }
 
@@ -62,7 +99,19 @@ static void state_alarm_rtc_timer (void) {
 }
 
 static void state_alarm_key_event (muint8 aCode) {
-    M_UNUSED_PARAM (aCode);
+    if (EHwKeyCodeKey1 == aCode) {
+        if (EAlarmStateIntro == TheAlarmState) {
+            engine_request_state (EEngineStateIdle);
+            editor_deactivate ();
+        }
+        else {
+            TheInactivityTimer = 0;
+        }
+    }
+    else {
+        TheInactivityTimer = 0;
+    }
+}
 
-    TheInactivity = 0;
+static void state_alarm_editor_done (mbool aConfirmed, TRtcTimeInfo *aInfo) {
 }

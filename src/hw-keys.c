@@ -7,7 +7,7 @@
 #include <avr/io.h>
 #endif /* M_AVR */
 
-static hw_keys_on_key_event TheCallback = NULL;
+static hw_keys_on_key_event TheCallbacks[2] = {NULL};
 
 /**
  * The handler for a 1ms timeout event
@@ -23,13 +23,23 @@ void hw_keys_deinit (void) {
 }
 
 void hw_keys_add_key_event_handler (hw_keys_on_key_event aCallback) {
-    TheCallback = aCallback;
+    muint8 i;
+    for (i = 0; i < 2; i++) {
+        if (!TheCallbacks[i]) {
+            TheCallbacks[i] = aCallback;
+            break;
+        }
+    }
 }
 
 void hw_keys_remove_key_event_handler (hw_keys_on_key_event aCallback) {
-    M_UNUSED_PARAM (aCallback);
-
-    TheCallback = NULL;
+    muint8 i;
+    for (i = 0; i < 2; i++) {
+        if (TheCallbacks[i] == aCallback) {
+            TheCallbacks[i] = NULL;
+            break;
+        }
+    }
 }
 
 /**
@@ -65,8 +75,13 @@ static void hw_keys_handle_key_pressed (muint8 aKey, mbool aPressed) {
             TheKeysInfo[aKey] = 250;
         }
         if (10 == count || 250 ==count) {
-            m_return_if_fail (TheCallback);
-            (*TheCallback) (aKey);
+            muint8 i;
+
+            for (i = 0; i < 2; i++) {
+                if (TheCallbacks[i]) {
+                    (*TheCallbacks[i]) (aKey);
+                }
+            }
         }
     }
     else {
