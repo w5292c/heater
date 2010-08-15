@@ -2,7 +2,7 @@
 
 #include "engine.h"
 #include "macros.h"
-#include "hw-rtc.h"
+#include "hw-keys.h"
 #include "lcd-driver.h"
 
 static void state_idle_enter (void);
@@ -74,5 +74,7 @@ static void state_idle_rtc_timer (void) {
 }
 
 static void state_idle_key_event (muint8 aCode) {
-    M_UNUSED_PARAM (aCode);
+    if (EHwKeyCodeKey1 == aCode) {
+        engine_request_state (EEngineStateAlarm);
+    }
 }
