@@ -31,7 +31,10 @@ void editor_deinit (void) {
     hw_keys_remove_key_event_handler (&editor_on_key_event);
 }
 
-void editor_activate (TEditorFlags aFlags, editor_done aCallback, const TRtcTimeInfo *aInitialInfo) {
+void editor_activate (TEditorFlags aFlags,
+    editor_done aCallback, const TRtcTimeInfo *aInitialInfo) {
+    M_UNUSED_PARAM (aFlags);
+
     m_return_if_fail (aCallback);
     m_return_if_fail (EEditorStateIdle == TheEditorState);
 

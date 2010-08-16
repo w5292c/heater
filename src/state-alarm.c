@@ -114,4 +114,6 @@ static void state_alarm_key_event (muint8 aCode) {
 }
 
 static void state_alarm_editor_done (mbool aConfirmed, TRtcTimeInfo *aInfo) {
+    M_UNUSED_PARAM (aInfo);
+    M_UNUSED_PARAM (aConfirmed);
 }

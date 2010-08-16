@@ -25,7 +25,7 @@
     if (!(arg)) { \
         return val; \
     }
-#endif /* M_DEBUG_LOGGING */ \
+#endif /* M_DEBUG_LOGGING */
 
 #ifdef M_PC
 #define M_FLASH
