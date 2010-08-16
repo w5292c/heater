@@ -18,7 +18,8 @@ typedef enum {
     EHwKeyCodeKeyUpRight,
     EHwKeyCodeKeyDownLeft,
     EHwKeyCodeKeyDownRight,
-    EHwKeyCodeKeyCenter
+    EHwKeyCodeKeyCenter,
+    EHwKeyCodeKeyCount
 } THwKeyCode;
 
 /**

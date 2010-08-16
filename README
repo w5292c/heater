@@ -10,3 +10,7 @@ $ avarice --mkI --program --file test.hex --jtag /dev/ttyUSB0 --debug
 Working with gcc-avr:
 $ avr-gdb
 (gdb) target remote localhost:<port>
+
+Launching avarice:
+$ avarice --part atmega32 --jtag /dev/ttyS4 :1111&
+$ avr-insight
