@@ -17,19 +17,22 @@ static THwTimerTickInfo TheTimerTickInfos[M_MAX_TIMER_TICKS];
 
 static mbool hw_timer_tick (void);
 /**
- * Initialize the Timer0-related HW registers
+ * Initialize the Timer2-related HW registers
  */
-static inline void hw_timer_init_timer0 (void) {
-    /* Reset the Timer0 counter */
-    TCNT0 = 0x00U;
-    /* Timer0 compare register */
-    OCR0 = 0xFAU;
-    /* TimerClock = SystemClock / 64 */
-    TCCR0 = (1<<CS01) | (1<<CS00);
-    /* Clear OCF0 / clear pending interrupts */
-    TIFR  = (1<<OCF0);
-    /* Enable Timer0 Compare Interrupt */
-    TIMSK = (1<<OCIE0);
+static inline void hw_timer_init_timer2 (void) {
+    /* Reset the Timer2 counter */
+    TCNT2 = 0x00U;
+    /* Timer2 compare register */
+    OCR2 = 249;
+    /* Clear OCF2 / clear pending interrupts */
+    TIFR  = (1<<OCF2);
+    /* Enable Timer2 Compare Interrupt */
+    TIMSK = (1<<OCIE2);
+    /* Set the control register */
+    TCCR2 =
+        (1<<WGM21)|(0<<WGM20)| /*< Mode: CTC */
+        (0<<COM21)|(0<<COM21)| /*< No port output */
+        (1<<CS22)|(0<<CS21)|(0<<CS20); /* Prescaler: 64 */
 }
 
 void hw_timer_init (void) {
@@ -41,7 +44,7 @@ void hw_timer_init (void) {
     }
     scheduler_add (&hw_timer_tick);
 
-    hw_timer_init_timer0 ();
+    hw_timer_init_timer2 ();
 }
 
 void hw_timer_deinit (void) {
@@ -101,11 +104,8 @@ static mbool hw_timer_tick (void) {
     return FALSE;
 }
 
-/* This is a 1 KHz timer0 handler */
-ISR (TIMER0_COMP_vect) {
+/* This is a 1 KHz timer2 handler */
+ISR (TIMER2_COMP_vect) {
     /* set the flag */
     TheTimerTickPending = TRUE;
-
-    /* reset the counter */
-    TCNT0 = 0x00;
 }
