@@ -89,7 +89,7 @@ void hw_sound_play_note (muint8 aNote, muint16 aLength, hw_sound_finished aCallb
     muint8 note;
     mint8 octave;
     muint16 base;
-    muint16 count;
+    mint16 count;
     muint16 prescaler;
     muint8 prescaler_ctrl;
 
@@ -111,7 +111,7 @@ void hw_sound_play_note (muint8 aNote, muint16 aLength, hw_sound_finished aCallb
     }
 
     /* now, 'count' and 'prescaler' have correct values */
-    m_return_if_fail ((count >0 && count < 0x100) || ((*aCallback) (), FALSE));
+    m_return_if_fail ((count > 0 && count < 0x100) || ((*aCallback) (), FALSE));
     m_return_if_fail ((
         prescaler == 1 || prescaler == 8 ||
         prescaler == 64 || prescaler == 256 ||
@@ -143,10 +143,11 @@ void hw_sound_play_note (muint8 aNote, muint16 aLength, hw_sound_finished aCallb
     TCNT0 = 0;
     OCR0 = (muint8)count;
     TCCR0 =
-        (0<<WGM01)|(0<<WGM00)| /*< Counter mode: CTC */
+        (1<<WGM01)|(0<<WGM00)| /*< Counter mode: CTC */
         (0<<COM01)|(1<<COM00)| /*< Output mode: Toggle output */
         prescaler_ctrl; /*< prescaler control value */
 
+    TheSoundState = EHwSoundStatePlaying;
     TheNoteLength = aLength;
     TheCallback = aCallback;
 }

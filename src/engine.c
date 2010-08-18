@@ -5,6 +5,7 @@
 #include "hw-rtc.h"
 #include "hw-keys.h"
 #include "hw-timer.h"
+#include "hw-sound.h"
 #include "scheduler.h"
 #include "lcd-driver.h"
 #include "state-idle.h"
@@ -15,6 +16,7 @@
 #include <avr/io.h>
 #endif /* M_AVR */
 
+static muint8 TheNote = 0;
 static muint8 TheCurrentState = EEngineStateNull;
 static TEngineStateInterface TheStates[EEngineStateLast] = {{NULL,NULL,NULL,NULL,NULL,NULL},};
 static TRtcTimeInfo TheCurrentTime = {0,0,0,0,0,0,0};
@@ -33,6 +35,7 @@ static void engine_rtc_timer (void);
 static void engine_on_key_event (muint8 aCode);
 static void engine_show_hello (void);
 static void engine_rtc_time_ready (const TRtcTimeInfo *aTimeInfo);
+static void engine_sound_finished (void);
 
 void engine_init (void) {
     scheduler_add (&engine_tick);
@@ -45,6 +48,7 @@ void engine_init (void) {
     lcd_init ();
     engine_show_hello ();
     editor_init ();
+    hw_sound_init ();
 
     /* the last thing, initialize the states */
     engine_state_idle_init ();
@@ -52,6 +56,8 @@ void engine_init (void) {
 
     /* Request initial state */
     engine_request_state (EEngineStateIdle);
+    TheNote = 0x40;
+    hw_sound_play_note (TheNote, 1000, &engine_sound_finished);
 }
 
 void engine_deinit (void) {
@@ -59,6 +65,7 @@ void engine_deinit (void) {
     engine_state_alarm_deinit ();
     engine_state_idle_deinit ();
 
+    hw_sound_deinit ();
     editor_deinit ();
     hw_keys_deinit ();
     hw_keys_remove_key_event_handler (&engine_on_key_event);
@@ -186,4 +193,44 @@ static void engine_show_hello (void) {
         lcd_set_pixel (60, 15, TRUE);
     }
     lcd_flash ();
+}
+
+static void engine_sound_finished (void) {
+    switch (TheNote)
+    {
+    case 0x40:
+        TheNote = 0x42;
+        break;
+    case 0x41:
+        break;
+    case 0x42:
+        TheNote = 0x44;
+        break;
+    case 0x43:
+        break;
+        break;
+    case 0x44:
+        TheNote = 0x45;
+        break;
+    case 0x45:
+        TheNote = 0x47;
+        break;
+    case 0x46:
+        break;
+    case 0x47:
+        TheNote = 0x49;
+        break;
+    case 0x48:
+        break;
+    case 0x49:
+        TheNote = 0x4B;
+        break;
+    case 0x4A:
+        break;
+    case 0x4B:
+        TheNote = 0x40;
+        break;
+    }
+
+    hw_sound_play_note (TheNote, 1000, &engine_sound_finished);
 }
