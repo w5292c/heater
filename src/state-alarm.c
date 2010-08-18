@@ -13,7 +13,8 @@ typedef enum {
     EAlarmStateNull = 0,
     EAlarmStateIdle,
     EAlarmStateIntro,
-    EAlarmStateTimeEditor
+    EAlarmStateTimeEditor,
+    EAlarmStateLeaving
 } TAlarmState;
 
 static muint8 TheAlarmState = EAlarmStateNull;
@@ -30,6 +31,9 @@ static void state_alarm_editor_done (mbool aConfirmed, TRtcTimeInfo *aInfo);
 void engine_state_alarm_init (void) {
     TEngineStateInterface alarm_api;
 
+    /* The state should only be intialized once */
+    m_return_if_fail (EAlarmStateNull == TheAlarmState);
+
     alarm_api.mEnter = state_alarm_enter;
     alarm_api.mLeave = state_alarm_leave;
     alarm_api.mTick = state_alarm_tick;
@@ -42,6 +46,7 @@ void engine_state_alarm_init (void) {
 }
 
 void engine_state_alarm_deinit (void) {
+    TheAlarmState = EAlarmStateNull;
 }
 
 static void state_alarm_enter (void) {
@@ -64,35 +69,40 @@ static void state_alarm_leave (void) {
 static void state_alarm_tick (void) {
 }
 
+static void state_alarm_activate_editor (void) {
+    TRtcTimeInfo info;
+    info.mMinute = 0x52;
+    info.mHour = 0x15;
+
+    editor_activate (0, &state_alarm_editor_done, &info);
+    TheAlarmState = EAlarmStateTimeEditor;
+}
+
 static void state_alarm_timer (void) {
     switch (TheAlarmState)
     {
     case EAlarmStateIntro:
         if (1000 == TheInactivityTimer) {
-            TRtcTimeInfo info;
-            info.mMinute = 0x52;
-            info.mHour = 0x15;
-
+            state_alarm_activate_editor ();
             TheInactivityTimer = 0;
-            editor_activate (0, &state_alarm_editor_done, &info);
-            TheAlarmState = EAlarmStateTimeEditor;
         }
         break;
     case EAlarmStateTimeEditor:
-        if (3000 == TheInactivityTimer) {
-            engine_request_state (EEngineStateIdle);
+        if (4000 == TheInactivityTimer) {
+            TheAlarmState = EAlarmStateLeaving;
+
             editor_deactivate ();
+            engine_request_state (EEngineStateIdle);
         }
+        break;
+    case EAlarmStateNull:
+    case EAlarmStateIdle:
+    case EAlarmStateLeaving:
         break;
     }
 
+    /* Update the inactivity counter */
     ++TheInactivityTimer;
-    if (4000 == TheInactivityTimer) {
-        TheInactivityTimer = 0;
-
-        engine_request_state (EEngineStateIdle);
-        editor_deactivate ();
-    }
 }
 
 static void state_alarm_rtc_timer (void) {
@@ -101,14 +111,16 @@ static void state_alarm_rtc_timer (void) {
 static void state_alarm_key_event (muint8 aCode) {
     if (EHwKeyCodeKey1 == aCode) {
         if (EAlarmStateIntro == TheAlarmState) {
+            TheAlarmState = EAlarmStateLeaving;
+
             engine_request_state (EEngineStateIdle);
-            editor_deactivate ();
         }
         else {
             TheInactivityTimer = 0;
         }
     }
     else {
+        state_alarm_activate_editor ();
         TheInactivityTimer = 0;
     }
 }

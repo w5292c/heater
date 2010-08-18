@@ -136,7 +136,7 @@ static void hw_keys_timer_callback (void) {
     asm volatile ("nop\n" ::);
 
     /* now read the keys */
-	const muint8 data = PINA&0x0FU;
+    const muint8 data = PINA&0x0FU;
     hw_keys_handle_keys_1 (data);
 
     PORTD = (1<<PD3)| /* pull-up for expernal interrupt */

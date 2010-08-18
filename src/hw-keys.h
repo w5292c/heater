@@ -4,7 +4,6 @@
 #include "types.h"
 
 typedef enum {
-    EHwKeyCodeNone,
     EHwKeyCodeKey1,
     EHwKeyCodeKey2,
     EHwKeyCodeKey3,
@@ -19,7 +18,10 @@ typedef enum {
     EHwKeyCodeKeyDownLeft,
     EHwKeyCodeKeyDownRight,
     EHwKeyCodeKeyCenter,
-    EHwKeyCodeKeyCount
+    /* the number of key codes */
+    EHwKeyCodeKeyCount,
+    /* special codes */
+    EHwKeyCodeNone
 } THwKeyCode;
 
 /**
