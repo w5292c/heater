@@ -12,6 +12,7 @@
 
 #ifdef M_AVR
 #include <string.h>
+#include <avr/io.h>
 #endif /* M_AVR */
 
 static muint8 TheCurrentState = EEngineStateNull;
@@ -162,15 +163,27 @@ static void engine_show_hello (void) {
     const muint8 sh = 7;
 
     lcd_clear ();
-    lcd_print_char (0 + sh, 1, 'H');
-    lcd_paint_char (8 + sh, 1, 'e');
-    lcd_print_char (16 + sh, 1, 'l');
-    lcd_paint_char (24 + sh, 1, 'l');
-    lcd_print_char (32 + sh, 1, 'o');
-    lcd_paint_char (40 + sh, 1, '!');
-    lcd_set_pixel (0, 0, TRUE);
-    lcd_set_pixel (0, 15, TRUE);
-    lcd_set_pixel (60, 0, TRUE);
-    lcd_set_pixel (60, 15, TRUE);
+    if (MCUCSR & (1<<WDRF)) {
+        /* watchdog reset, display 'Error' intro */
+        lcd_print_char (0 + sh, 1, 'E');
+        lcd_paint_char (8 + sh, 1, 'r');
+        lcd_print_char (16 + sh, 1, 'r');
+        lcd_paint_char (24 + sh, 1, 'o');
+        lcd_print_char (32 + sh, 1, 'r');
+        lcd_paint_char (40 + sh, 1, '!');
+    }
+    else {
+        /* one of ordinary resets */
+        lcd_print_char (0 + sh, 1, 'H');
+        lcd_paint_char (8 + sh, 1, 'e');
+        lcd_print_char (16 + sh, 1, 'l');
+        lcd_paint_char (24 + sh, 1, 'l');
+        lcd_print_char (32 + sh, 1, 'o');
+        lcd_paint_char (40 + sh, 1, '!');
+        lcd_set_pixel (0, 0, TRUE);
+        lcd_set_pixel (0, 15, TRUE);
+        lcd_set_pixel (60, 0, TRUE);
+        lcd_set_pixel (60, 15, TRUE);
+    }
     lcd_flash ();
 }
