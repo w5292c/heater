@@ -5,6 +5,7 @@
 
 #ifdef M_AVR
 #include <avr/io.h>
+#include <avr/wdt.h>
 #include <avr/interrupt.h>
 #endif /* M_AVR */
 
@@ -33,6 +34,9 @@ static inline void hw_timer_init_timer2 (void) {
         (1<<WGM21)|(0<<WGM20)| /*< Mode: CTC */
         (0<<COM21)|(0<<COM21)| /*< No port output */
         (1<<CS22)|(0<<CS21)|(0<<CS20); /* Prescaler: 64 */
+
+    /* enable the watchdog timer */
+    wdt_enable (WDTO_15MS);
 }
 
 void hw_timer_init (void) {
@@ -99,6 +103,7 @@ static mbool hw_timer_tick (void) {
 
         /* reset the pending flag */
         TheTimerTickPending = FALSE;
+        wdt_reset ();
     }
 
     return FALSE;
