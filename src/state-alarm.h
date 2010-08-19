@@ -3,7 +3,13 @@
 
 #include "types.h"
 
+/**
+ * Initialize the Alarm engine state
+ */
 void engine_state_alarm_init (void);
+/**
+ * Deinitialize the Alarm engine state
+ */
 void engine_state_alarm_deinit (void);
 
 

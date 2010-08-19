@@ -6,7 +6,6 @@
 #include "lcd-driver.h"
 
 static void state_idle_enter (void);
-static void state_idle_leave (void);
 static void state_idle_rtc_timer (void);
 static void state_idle_key_event (muint8 aCode);
 
@@ -15,7 +14,7 @@ void engine_state_idle_init (void) {
     TEngineStateInterface idle_api;
 
     idle_api.mEnter = state_idle_enter;
-    idle_api.mLeave = state_idle_leave;
+    idle_api.mLeave = NULL;
     idle_api.mTick = NULL;
     idle_api.mTimer = NULL;
     idle_api.mRtcTimer = state_idle_rtc_timer;
@@ -29,9 +28,6 @@ void engine_state_idle_deinit (void) {
 
 static void state_idle_enter (void) {
     state_idle_rtc_timer ();
-}
-
-static void state_idle_leave (void) {
 }
 
 static void state_idle_rtc_timer (void) {

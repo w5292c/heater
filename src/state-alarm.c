@@ -22,9 +22,7 @@ static muint16 TheInactivityTimer = 0;
 
 static void state_alarm_enter (void);
 static void state_alarm_leave (void);
-static void state_alarm_tick (void);
 static void state_alarm_timer (void);
-static void state_alarm_rtc_timer (void);
 static void state_alarm_key_event (muint8 aCode);
 static void state_alarm_editor_done (mbool aConfirmed, TRtcTimeInfo *aInfo);
 
@@ -36,9 +34,9 @@ void engine_state_alarm_init (void) {
 
     alarm_api.mEnter = state_alarm_enter;
     alarm_api.mLeave = state_alarm_leave;
-    alarm_api.mTick = state_alarm_tick;
+    alarm_api.mTick = NULL;
     alarm_api.mTimer = state_alarm_timer;
-    alarm_api.mRtcTimer = state_alarm_rtc_timer;
+    alarm_api.mRtcTimer = NULL;
     alarm_api.mKeyEvent = state_alarm_key_event;
     TheAlarmState = EAlarmStateIdle;
 
@@ -64,9 +62,6 @@ static void state_alarm_enter (void) {
 static void state_alarm_leave (void) {
     TheInactivityTimer = 0;
     TheAlarmState = EAlarmStateIdle;
-}
-
-static void state_alarm_tick (void) {
 }
 
 static void state_alarm_activate_editor (void) {
@@ -103,9 +98,6 @@ static void state_alarm_timer (void) {
 
     /* Update the inactivity counter */
     ++TheInactivityTimer;
-}
-
-static void state_alarm_rtc_timer (void) {
 }
 
 static void state_alarm_key_event (muint8 aCode) {
