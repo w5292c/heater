@@ -1,5 +1,5 @@
 MCPU=atmega32
-JTAG_PORT=/dev/ttyUSB0
+JTAG_PORT=`ls /dev/ttyUSB*`
 
 MCFLAGS=-DF_CPU=16000000UL -DM_AVR -O0 -Wall -Werror -Wextra -g -W -pedantic \
 	-Wstrict-prototypes -Wundef -std=gnu99
@@ -23,10 +23,10 @@ $(TARGET_FILENAME): $(TARGET_ELF)
 	avr-objcopy -O $(TARGET_FORMAT) $(TARGET_ELF) $(TARGET_FILENAME)
 
 test: liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-rtc.o hw-i2c.o hw-timer.o \
-	  hw-keys.o state-idle.o state-alarm.o editor.o hw-sound.o main-avr.c
+	  hw-keys.o state-idle.o state-alarm.o state-date.o editor.o hw-sound.o main-avr.c
 	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) main-avr.c -o test \
 		liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-rtc.o hw-i2c.o hw-timer.o \
-		hw-keys.o state-idle.o state-alarm.o editor.o hw-sound.o
+		hw-keys.o state-idle.o state-alarm.o state-date.o editor.o hw-sound.o
 	avr-objcopy --only-keep-debug $(TARGET_ELF) $(DEBUG_FILENAME)
 	#avr-strip $(TARGET_ELF)
 	avr-size -B $(TARGET_ELF)
@@ -66,6 +66,9 @@ state-idle.o: state-idle.c state-idle.h
 
 state-alarm.o: state-alarm.c state-alarm.h
 	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) state-alarm.c -c -o state-alarm.o
+
+state-date.o: state-date.c state-date.h
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) state-date.c -c -o state-date.o
 
 editor.o: editor.c editor.h
 	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) editor.c -c -o editor.o

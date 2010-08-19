@@ -9,6 +9,7 @@
 #include "scheduler.h"
 #include "lcd-driver.h"
 #include "state-idle.h"
+#include "state-date.h"
 #include "state-alarm.h"
 
 #ifdef M_AVR
@@ -52,6 +53,7 @@ void engine_init (void) {
 
     /* the last thing, initialize the states */
     engine_state_idle_init ();
+    engine_state_date_init ();
     engine_state_alarm_init ();
 
     /* Request initial state */
@@ -63,6 +65,7 @@ void engine_init (void) {
 void engine_deinit (void) {
     /* first deinitialize the states */
     engine_state_alarm_deinit ();
+    engine_state_date_deinit ();
     engine_state_idle_deinit ();
 
     hw_sound_deinit ();

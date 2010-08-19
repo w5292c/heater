@@ -5,6 +5,7 @@
 
 typedef enum {
     EEngineStateIdle = 0,
+    EEngineStateDate,
     EEngineStateAlarm,
     EEngineStateTimeSet,
     EEngineStateDateSet,
