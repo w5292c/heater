@@ -175,15 +175,15 @@ static void engine_show_hello (void) {
 
     if (MCUCSR & (1<<WDRF)) {
         /* watchdog reset, display 'Error' intro */
-        lcd_paint_string_p (7, 1, PSTR ("Error!"));
+        lcd_paint_string_7x14_p (0, 1, PSTR ("Error!"));
+        lcd_paint_string_5x8_p (42, 0, PSTR ("\200A\201"));
+        lcd_paint_string_5x8_p (42, 8, PSTR ("\200B\201"));
     }
     else {
         /* one of ordinary resets */
-        lcd_paint_string_p (7, 1, PSTR ("Hello!"));
-        lcd_set_pixel ( 0,  0, TRUE);
-        lcd_set_pixel ( 0, 15, TRUE);
-        lcd_set_pixel (60,  0, TRUE);
-        lcd_set_pixel (60, 15, TRUE);
+        lcd_paint_string_7x14_p (0, 1, PSTR ("Hello!"));
+        lcd_paint_string_5x8_p (42, 0, PSTR ("\200C\201"));
+        lcd_paint_string_5x8_p (42, 8, PSTR ("\200D\201"));
     }
     lcd_flash ();
 }

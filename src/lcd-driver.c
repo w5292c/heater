@@ -201,40 +201,40 @@ static void lcd_debug_show_buffer (void) {
 }
 #endif
 
-void lcd_print_char (muint8 aX, muint8 aY, muint8 aChar) {
+void lcd_print_char_7x14 (muint8 aX, muint8 aY, muint8 aChar) {
     muint x;
     muint y;
 
     for (y = 0; y < 14; y++) {
         muint8 image;
 
-        image = get_font14_byte (aChar, y);
+        image = get_font_7x14_byte (aChar, y);
         for (x = 0; x < 7; x++) {
             muint8 mask;
 
-            mask = (1 << x);
+            mask = (1 << (x + 1));
             lcd_set_pixel (aX + 7 - x, y + aY, mask & image);
         }
     }
 }
 
-void lcd_paint_char (muint8 aX, muint8 aY, muint8 aChar) {
+void lcd_paint_char_7x14 (muint8 aX, muint8 aY, muint8 aChar) {
     muint x;
     muint y;
 
     for (y = 0; y < 14; y++) {
         muint8 image;
 
-        image = get_font14_byte (aChar, y);
+        image = get_font_7x14_byte (aChar, y);
         for (x = 0; x < 7; x++) {
-            if ((1 << x) & image) {
+            if ((1 << (x + 1)) & image) {
                 lcd_set_pixel (aX + 7 - x, y + aY, TRUE);
             }
         }
     }
 }
 
-void lcd_paint_string (muint8 aX, muint8 aY, const mchar *aString) {
+void lcd_paint_string_7x14 (muint8 aX, muint8 aY, const mchar *aString) {
     mchar ch;
 
     m_return_if_fail (aString);
@@ -242,7 +242,7 @@ void lcd_paint_string (muint8 aX, muint8 aY, const mchar *aString) {
     m_return_if_fail (aY < 16);
 
     while (0 != (ch = *aString)) {
-        lcd_paint_char (aX, aY, ch);
+        lcd_paint_char_7x14 (aX, aY, ch);
 
         aX += 7;
         if (aX > 60) {
@@ -254,7 +254,7 @@ void lcd_paint_string (muint8 aX, muint8 aY, const mchar *aString) {
     }
 }
 
-void lcd_paint_string_p (muint8 aX, muint8 aY, const mchar *aString) {
+void lcd_paint_string_7x14_p (muint8 aX, muint8 aY, const mchar *aString) {
     mchar ch;
 
     m_return_if_fail (aString);
@@ -262,9 +262,82 @@ void lcd_paint_string_p (muint8 aX, muint8 aY, const mchar *aString) {
     m_return_if_fail (aY < 16);
 
     while (0 != (ch = pgm_read_byte  (aString))) {
-        lcd_paint_char (aX, aY, ch);
+        lcd_paint_char_7x14 (aX, aY, ch);
 
         aX += 7;
+        if (aX > 60) {
+            break;
+        }
+
+        /* handle the next string */
+        ++aString;
+    }
+}
+
+void lcd_print_char_5x8 (muint8 aX, muint8 aY, muint8 aChar) {
+    muint x;
+    muint y;
+
+    for (y = 0; y < 8; y++) {
+        muint8 image;
+
+        image = get_font_7x14_byte (aChar, y);
+        for (x = 0; x < 5; x++) {
+            muint8 mask;
+
+            mask = (1 << (x + 3));
+            lcd_set_pixel (aX + 5 - x, y + aY, mask & image);
+        }
+    }
+}
+
+void lcd_paint_char_5x8 (muint8 aX, muint8 aY, muint8 aChar) {
+    muint x;
+    muint y;
+
+    for (y = 0; y < 8; y++) {
+        muint8 image;
+
+        image = get_font_5x8_byte (aChar, y);
+        for (x = 0; x < 5; x++) {
+            if ((1 << (x + 3)) & image) {
+                lcd_set_pixel (aX + 5 - x, y + aY, TRUE);
+            }
+        }
+    }
+}
+
+void lcd_paint_string_5x8 (muint8 aX, muint8 aY, const mchar *aString) {
+    mchar ch;
+
+    m_return_if_fail (aString);
+    m_return_if_fail (aX < 61);
+    m_return_if_fail (aY < 16);
+
+    while (0 != (ch = *aString)) {
+        lcd_paint_char_5x8 (aX, aY, ch);
+
+        aX += 5;
+        if (aX > 60) {
+            break;
+        }
+
+        /* handle the next string */
+        ++aString;
+    }
+}
+
+void lcd_paint_string_5x8_p (muint8 aX, muint8 aY, const mchar *aString) {
+    mchar ch;
+
+    m_return_if_fail (aString);
+    m_return_if_fail (aX < 61);
+    m_return_if_fail (aY < 16);
+
+    while (0 != (ch = pgm_read_byte  (aString))) {
+        lcd_paint_char_5x8 (aX, aY, ch);
+
+        aX += 5;
         if (aX > 60) {
             break;
         }

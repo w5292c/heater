@@ -57,12 +57,12 @@ void editor_activate (TEditorFlags aFlags,
 
 static void editor_update_screen (void) {
     lcd_clear ();
-    lcd_paint_char (0, 1, '0' + ((TheTimeInfo.mHour>>4)&0x0FU));
-    lcd_paint_char (7, 1, '0' + ((TheTimeInfo.mHour)&0x0FU));
-    lcd_paint_char (14, 1, ':');
-    lcd_paint_char (21, 1, '0' + ((TheTimeInfo.mMinute>>4)&0x0FU));
-    lcd_paint_char (28, 1, '0' + ((TheTimeInfo.mMinute)&0x0FU));
-    lcd_paint_char (
+    lcd_paint_char_7x14 (0, 1, '0' + ((TheTimeInfo.mHour>>4)&0x0FU));
+    lcd_paint_char_7x14 (7, 1, '0' + ((TheTimeInfo.mHour)&0x0FU));
+    lcd_paint_char_7x14 (14, 1, ':');
+    lcd_paint_char_7x14 (21, 1, '0' + ((TheTimeInfo.mMinute>>4)&0x0FU));
+    lcd_paint_char_7x14 (28, 1, '0' + ((TheTimeInfo.mMinute)&0x0FU));
+    lcd_paint_char_7x14 (
         (0 == TheIndex) ? 0 :
         (1 == TheIndex) ? 7 :
         (2 == TheIndex) ? 21 : 28, 3, '_');
