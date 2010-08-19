@@ -46,6 +46,8 @@
 #include <unistd.h>
 #define _delay_us(arg) usleep (arg)
 #define _delay_ms(arg) usleep (arg*1000)
+#define pgm_read_byte(arg) (*((mchar*)arg))
+#define PSTR(arg) (arg)
 #endif
 #ifdef M_AVR
 /**

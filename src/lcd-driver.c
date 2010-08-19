@@ -8,6 +8,10 @@
 #include <stdio.h>
 #endif
 
+#ifndef M_PC
+#include <avr/pgmspace.h>
+#endif
+
 #ifdef M_PC
 /**
  * Display the current LCD buffers on console
@@ -227,6 +231,46 @@ void lcd_paint_char (muint8 aX, muint8 aY, muint8 aChar) {
                 lcd_set_pixel (aX + 7 - x, y + aY, TRUE);
             }
         }
+    }
+}
+
+void lcd_paint_string (muint8 aX, muint8 aY, const mchar *aString) {
+    mchar ch;
+
+    m_return_if_fail (aString);
+    m_return_if_fail (aX < 61);
+    m_return_if_fail (aY < 16);
+
+    while (0 != (ch = *aString)) {
+        lcd_paint_char (aX, aY, ch);
+
+        aX += 7;
+        if (aX > 60) {
+            break;
+        }
+
+        /* handle the next string */
+        ++aString;
+    }
+}
+
+void lcd_paint_string_p (muint8 aX, muint8 aY, const mchar *aString) {
+    mchar ch;
+
+    m_return_if_fail (aString);
+    m_return_if_fail (aX < 61);
+    m_return_if_fail (aY < 16);
+
+    while (0 != (ch = pgm_read_byte  (aString))) {
+        lcd_paint_char (aX, aY, ch);
+
+        aX += 7;
+        if (aX > 60) {
+            break;
+        }
+
+        /* handle the next string */
+        ++aString;
     }
 }
 

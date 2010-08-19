@@ -11,5 +11,7 @@ void lcd_clear (void);
 void lcd_set_pixel (muint8 aX, muint8 aY, muint8 aValue);
 void lcd_print_char (muint8 aX, muint8 aY, muint8 aChar);
 void lcd_paint_char (muint8 aX, muint8 aY, muint8 aChar);
+void lcd_paint_string (muint8 aX, muint8 aY, const mchar *aString);
+void lcd_paint_string_p (muint8 aX, muint8 aY, const mchar *aString);
 
 #endif /* __AVR_LCD_PROJECT_LCD_DRIVER_H__ */

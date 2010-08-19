@@ -6,6 +6,7 @@
 /**
  * 8-bit types
  */
+typedef char mchar;
 typedef uint8_t mbool;
 typedef int8_t mint8;
 typedef uint8_t muint8;

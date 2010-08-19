@@ -9,19 +9,19 @@
 #include <avr/pgmspace.h>
 #endif
 
-static const mint8 TheMonths[] M_FLASH = {
-    'J', 'a', 'n',
-    'F', 'e', 'b',
-    'M', 'a', 'r',
-    'A', 'p', 'r',
-    'M', 'a', 'y',
-    'J', 'u', 'n',
-    'J', 'u', 'l',
-    'A', 'u', 'g',
-    'S', 'e', 'p',
-    'O', 'c', 't',
-    'N', 'o', 'v',
-    'D', 'e', 'c'
+static const mchar TheMonths[] M_FLASH = {
+    'J', 'a', 'n', 0,
+    'F', 'e', 'b', 0,
+    'M', 'a', 'r', 0,
+    'A', 'p', 'r', 0,
+    'M', 'a', 'y', 0,
+    'J', 'u', 'n', 0,
+    'J', 'u', 'l', 0,
+    'A', 'u', 'g', 0,
+    'S', 'e', 'p', 0,
+    'O', 'c', 't', 0,
+    'N', 'o', 'v', 0,
+    'D', 'e', 'c', 0
 };
 
 /**
@@ -68,10 +68,7 @@ static void state_date_enter (void) {
     TheDateState = EDateStateIntro;
 
     lcd_clear ();
-    lcd_paint_char ( 0, 1, 'D');
-    lcd_paint_char ( 7, 1, 'a');
-    lcd_paint_char (14, 1, 't');
-    lcd_paint_char (21, 1, 'e');
+    lcd_paint_string_p (0, 0, PSTR ("Date"));
     lcd_flash ();
 }
 
@@ -81,7 +78,7 @@ static void state_date_leave (void) {
 }
 
 static void state_date_update (void) {
-    const mint8 *month;
+    const mchar *month;
     const TRtcTimeInfo *time;
 
     TheDateState = EDateStateDisplayingDate;
@@ -92,10 +89,8 @@ static void state_date_update (void) {
     /* show data */
     lcd_clear ();
     m_return_if_fail (time->mMonth > 0 && time->mMonth < 13);
-    month = &TheMonths[(time->mMonth - 1)*3];
-    lcd_paint_char ( 0, 1, pgm_read_byte (month + 0));
-    lcd_paint_char ( 7, 1, pgm_read_byte (month + 1));
-    lcd_paint_char (14, 1, pgm_read_byte (month + 2));
+    month = &TheMonths[(time->mMonth - 1)<<2];
+    lcd_paint_string_p (0, 0, month);
     lcd_paint_char (21, 1, '-');
     lcd_paint_char (28, 1, '0' + ((time->mDay&0xF0U)>>4));
     lcd_paint_char (35, 1, '0' + ((time->mDay&0x0FU)));

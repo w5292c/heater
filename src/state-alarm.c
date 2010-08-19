@@ -6,6 +6,10 @@
 #include "hw-keys.h"
 #include "lcd-driver.h"
 
+#ifdef M_AVR
+#include <avr/pgmspace.h>
+#endif
+
 /**
  * The internal state for the alarm state
  */
@@ -51,11 +55,7 @@ static void state_alarm_enter (void) {
     TheAlarmState = EAlarmStateIntro;
 
     lcd_clear ();
-    lcd_paint_char ( 0, 1, 'A');
-    lcd_paint_char ( 7, 1, 'l');
-    lcd_paint_char (14, 1, 'a');
-    lcd_paint_char (21, 1, 'r');
-    lcd_paint_char (28, 1, 'm');
+    lcd_paint_string_p (0, 0, PSTR ("Alarm"));
     lcd_flash ();
 }
 

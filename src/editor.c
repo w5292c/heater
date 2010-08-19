@@ -64,8 +64,8 @@ static void editor_update_screen (void) {
     lcd_paint_char (28, 1, '0' + ((TheTimeInfo.mMinute)&0x0FU));
     lcd_paint_char (
         (0 == TheIndex) ? 0 :
-        (1 == TheIndex) ? 8 :
-        (2 == TheIndex) ? 24 : 32, 3, '_');
+        (1 == TheIndex) ? 7 :
+        (2 == TheIndex) ? 21 : 28, 3, '_');
     lcd_flash ();
 }
 

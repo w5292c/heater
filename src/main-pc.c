@@ -11,13 +11,7 @@ int main (int argn, char **argv) {
     lcd_init ();
     lcd_clear ();
 
-    muint8 sh = 7;
-    lcd_paint_char ( 0 + sh, 1, 'H');
-    lcd_paint_char ( 7 + sh, 1, 'e');
-    lcd_paint_char (14 + sh, 1, 'l');
-    lcd_paint_char (21 + sh, 1, 'l');
-    lcd_paint_char (28 + sh, 1, 'o');
-    lcd_paint_char (35 + sh, 1, '!');
+    lcd_paint_string_p (7, 1, PSTR ("Hello!"));
     lcd_set_pixel ( 0,  0, TRUE);
     lcd_set_pixel ( 0, 15, TRUE);
     lcd_set_pixel (60,  0, TRUE);
