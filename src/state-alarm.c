@@ -51,11 +51,11 @@ static void state_alarm_enter (void) {
     TheAlarmState = EAlarmStateIntro;
 
     lcd_clear ();
-    lcd_print_char (0, 1, 'A');
-    lcd_paint_char (8, 1, 'l');
-    lcd_print_char (16, 1, 'a');
-    lcd_paint_char (24, 1, 'r');
-    lcd_print_char (32, 1, 'm');
+    lcd_paint_char ( 0, 1, 'A');
+    lcd_paint_char ( 7, 1, 'l');
+    lcd_paint_char (14, 1, 'a');
+    lcd_paint_char (21, 1, 'r');
+    lcd_paint_char (28, 1, 'm');
     lcd_flash ();
 }
 

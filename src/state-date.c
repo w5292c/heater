@@ -68,10 +68,10 @@ static void state_date_enter (void) {
     TheDateState = EDateStateIntro;
 
     lcd_clear ();
-    lcd_print_char (0, 1, 'D');
-    lcd_paint_char (8, 1, 'a');
-    lcd_print_char (16, 1, 't');
-    lcd_paint_char (24, 1, 'e');
+    lcd_paint_char ( 0, 1, 'D');
+    lcd_paint_char ( 7, 1, 'a');
+    lcd_paint_char (14, 1, 't');
+    lcd_paint_char (21, 1, 'e');
     lcd_flash ();
 }
 
@@ -93,12 +93,12 @@ static void state_date_update (void) {
     lcd_clear ();
     m_return_if_fail (time->mMonth > 0 && time->mMonth < 13);
     month = &TheMonths[(time->mMonth - 1)*3];
-    lcd_print_char ( 0, 1, pgm_read_byte (month + 0));
-    lcd_paint_char ( 8, 1, pgm_read_byte (month + 1));
-    lcd_paint_char (16, 1, pgm_read_byte (month + 2));
-    lcd_paint_char (24, 1, '-');
-    lcd_paint_char (32, 1, '0' + ((time->mDay&0xF0U)>>4));
-    lcd_paint_char (40, 1, '0' + ((time->mDay&0x0FU)));
+    lcd_paint_char ( 0, 1, pgm_read_byte (month + 0));
+    lcd_paint_char ( 7, 1, pgm_read_byte (month + 1));
+    lcd_paint_char (14, 1, pgm_read_byte (month + 2));
+    lcd_paint_char (21, 1, '-');
+    lcd_paint_char (28, 1, '0' + ((time->mDay&0xF0U)>>4));
+    lcd_paint_char (35, 1, '0' + ((time->mDay&0x0FU)));
     lcd_flash ();
 }
 

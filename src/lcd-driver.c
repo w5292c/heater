@@ -205,7 +205,7 @@ void lcd_print_char (muint8 aX, muint8 aY, muint8 aChar) {
         muint8 image;
 
         image = get_font14_byte (aChar, y);
-        for (x = 0; x < 8; x++) {
+        for (x = 0; x < 7; x++) {
             muint8 mask;
 
             mask = (1 << x);
@@ -222,7 +222,7 @@ void lcd_paint_char (muint8 aX, muint8 aY, muint8 aChar) {
         muint8 image;
 
         image = get_font14_byte (aChar, y);
-        for (x = 0; x < 8; x++) {
+        for (x = 0; x < 7; x++) {
             if ((1 << x) & image) {
                 lcd_set_pixel (aX + 7 - x, y + aY, TRUE);
             }

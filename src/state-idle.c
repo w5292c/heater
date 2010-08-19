@@ -36,14 +36,14 @@ static void state_idle_rtc_timer (void) {
 
     /* show time */
     lcd_clear ();
-    lcd_print_char (0, 1, '0' + ((time->mHour&0xF0U)>>4));
-    lcd_paint_char (8, 1, '0' + ((time->mHour&0x0FU)));
-    lcd_print_char (15, 1, ':');
-    lcd_paint_char (22, 1, '0' + ((time->mMinute&0xF0U)>>4));
-    lcd_print_char (30, 1, '0' + ((time->mMinute&0x0FU)));
-    lcd_paint_char (37, 1, ':');
-    lcd_paint_char (44, 1, '0' + ((time->mSeconds&0xF0U)>>4));
-    lcd_paint_char (52, 1, '0' + ((time->mSeconds&0x0FU)));
+    lcd_paint_char (0, 1, '0' + ((time->mHour&0xF0U)>>4));
+    lcd_paint_char (7, 1, '0' + ((time->mHour&0x0FU)));
+    lcd_paint_char (13, 1, ':');
+    lcd_paint_char (19, 1, '0' + ((time->mMinute&0xF0U)>>4));
+    lcd_paint_char (26, 1, '0' + ((time->mMinute&0x0FU)));
+    lcd_paint_char (32, 1, ':');
+    lcd_paint_char (38, 1, '0' + ((time->mSeconds&0xF0U)>>4));
+    lcd_paint_char (45, 1, '0' + ((time->mSeconds&0x0FU)));
     lcd_flash ();
 }
 
