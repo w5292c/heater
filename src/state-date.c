@@ -88,8 +88,9 @@ static void state_date_update (void) {
 
     /* show data */
     lcd_clear ();
-    m_return_if_fail (time->mMonth > 0 && time->mMonth < 13);
-    month = &TheMonths[(time->mMonth - 1)<<2];
+    int monthNumber = (time->mMonth&0x0FU) + 10*((time->mMonth>>4) & 0x0FU);
+    m_return_if_fail (monthNumber > 0 && monthNumber < 13);
+    month = &TheMonths[(monthNumber - 1)<<2];
     lcd_paint_string_7x14_p (0, 0, month);
     lcd_paint_char_7x14 (21, 1, '-');
     lcd_paint_char_7x14 (28, 1, '0' + ((time->mDay&0xF0U)>>4));
