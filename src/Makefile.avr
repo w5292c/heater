@@ -87,3 +87,6 @@ clean-source:
 
 t:  $(TARGET_FILENAME)
 	C:\APPS\WinAVR\bin\avarice --part $(MCPU) --jtag /dev/ttyS4 --erase --program --verify --file $(TARGET_FILENAME)
+
+prog: $(TARGET_FILENAME)
+	avrdude -P /dev/ttyUSB0 -p $(MCPU) -U $(TARGET_FILENAME)
