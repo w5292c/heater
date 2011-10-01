@@ -1,0 +1,134 @@
+#include "state-set-time.h"
+
+#include "editor.h"
+#include "engine.h"
+#include "macros.h"
+#include "hw-keys.h"
+#include "lcd-driver.h"
+
+#ifdef M_AVR
+#include <avr/pgmspace.h>
+#endif
+
+/**
+ * The internal states for the set-time state
+ */
+typedef enum {
+    ESetTimeStateNull = 0,
+    ESetTimeStateIdle,
+    ESetTimeStateIntro,
+    ESetTimeStateEditor,
+    ESetTimeStateLeaving
+} TSetTimeState;
+
+static muint8 TheSetTimeState = ESetTimeStateNull;
+static muint16 TheSetTimeInactivityTimer = 0;
+
+static void state_set_time_enter (void);
+static void state_set_time_leave (void);
+static void state_set_time_timer (void);
+static void state_set_time_key_event (muint8 aCode);
+static void state_set_time_editor_done (mbool aConfirmed, TRtcTimeInfo *aInfo);
+
+void engine_state_set_time_init (void) {
+    TEngineStateInterface set_time_api;
+
+    /* The state should only be intialized once */
+    m_return_if_fail (ESetTimeStateNull == TheSetTimeState);
+
+    set_time_api.mEnter = state_set_time_enter;
+    set_time_api.mLeave = state_set_time_leave;
+    set_time_api.mTick = NULL;
+    set_time_api.mTimer = state_set_time_timer;
+    set_time_api.mRtcTimer = NULL;
+    set_time_api.mKeyEvent = state_set_time_key_event;
+    TheSetTimeState = ESetTimeStateIdle;
+
+    engine_register_state (EEngineStateTimeSet, &set_time_api);
+}
+
+void engine_state_set_time_deinit (void) {
+    TheSetTimeState = ESetTimeStateNull;
+}
+
+static void state_set_time_enter (void) {
+    TheSetTimeState = ESetTimeStateIntro;
+
+    lcd_clear ();
+    lcd_paint_string_7x14_p (0, 0, PSTR ("Set time"));
+    lcd_flash ();
+}
+
+static void state_set_time_leave (void) {
+    TheSetTimeInactivityTimer = 0;
+    TheSetTimeState = ESetTimeStateIdle;
+}
+
+static void state_set_time_activate_editor (void) {
+    const TRtcTimeInfo *const time = engine_get_current_time ();
+    m_return_if_fail (time);
+
+    editor_activate (0, &state_set_time_editor_done, time);
+    TheSetTimeState = ESetTimeStateEditor;
+}
+
+static void state_set_time_timer (void) {
+    switch (TheSetTimeState)
+    {
+    case ESetTimeStateIntro:
+        if (1000 == TheSetTimeInactivityTimer) {
+            state_set_time_activate_editor ();
+            TheSetTimeInactivityTimer = 0;
+        }
+        break;
+    case ESetTimeStateEditor:
+        if (10000 == TheSetTimeInactivityTimer) {
+            TheSetTimeState = ESetTimeStateLeaving;
+
+            editor_deactivate ();
+            engine_request_state (EEngineStateIdle);
+        }
+        break;
+    case ESetTimeStateNull:
+    case ESetTimeStateIdle:
+    case ESetTimeStateLeaving:
+        break;
+    }
+
+    /* Update the inactivity counter */
+    ++TheSetTimeInactivityTimer;
+}
+
+static void state_set_time_key_event (muint8 aCode) {
+    if (EHwKeyCodeKey1 == aCode) {
+        if (ESetTimeStateIntro == TheSetTimeState) {
+            engine_request_state (EEngineStateAlarm);
+        }
+        else if (ESetTimeStateEditor == TheSetTimeState) {
+            editor_deactivate ();
+            engine_request_state (EEngineStateIdle);
+        }
+    }
+    TheSetTimeInactivityTimer = 0;
+}
+
+static void state_set_time_time_updated (mbool aSuccess) {
+    M_UNUSED_PARAM (aSuccess);
+    TheSetTimeState = ESetTimeStateLeaving;
+
+    editor_deactivate ();
+    engine_request_state (EEngineStateIdle);
+}
+
+static void state_set_time_editor_done (mbool aConfirmed, TRtcTimeInfo *aInfo) {
+    m_return_if_fail (aInfo);
+    if (aConfirmed) {
+        const TRtcTimeInfo *currentTime = engine_get_current_time ();
+        m_return_if_fail (currentTime);
+
+        TRtcTimeInfo time = *currentTime;
+        time.mHour = aInfo->mHour;
+        time.mMinute = aInfo->mMinute;
+        hw_rtc_set_time (&time, &state_set_time_time_updated);
+    }
+}

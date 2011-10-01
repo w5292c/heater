@@ -11,6 +11,7 @@
 #include "state-idle.h"
 #include "state-date.h"
 #include "state-alarm.h"
+#include "state-set-time.h"
 
 #ifdef M_AVR
 #include <string.h>
@@ -56,6 +57,7 @@ void engine_init (void) {
     engine_state_idle_init ();
     engine_state_date_init ();
     engine_state_alarm_init ();
+    engine_state_set_time_init ();
 
     /* Request initial state */
     engine_request_state (EEngineStateIdle);
@@ -65,6 +67,7 @@ void engine_init (void) {
 
 void engine_deinit (void) {
     /* first deinitialize the states */
+    engine_state_set_time_deinit ();
     engine_state_alarm_deinit ();
     engine_state_date_deinit ();
     engine_state_idle_deinit ();

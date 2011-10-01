@@ -105,7 +105,7 @@ static void state_alarm_key_event (muint8 aCode) {
         if (EAlarmStateIntro == TheAlarmState) {
             TheAlarmState = EAlarmStateLeaving;
 
-            engine_request_state (EEngineStateIdle);
+            engine_request_state (EEngineStateTimeSet);
         }
         else {
             TheInactivityTimer = 0;
