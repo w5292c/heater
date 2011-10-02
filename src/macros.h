@@ -1,6 +1,10 @@
 #ifndef __AVR_LCD_PROJECT_MACROS_H__
 #define __AVR_LCD_PROJECT_MACROS_H__
 
+#include "engine.h"
+
+#define m_assert(arg, desc) if (!arg) engine_panic_p (desc);
+
 #ifdef M_DEBUG_LOGGING
 #ifdef M_PC
 #include <stdio.h>
@@ -8,12 +12,12 @@
 
 #define m_return_if_fail(arg) \
     if (!(arg)) { \
-        fprintf (stderr, "Warning: function: %s; failed: [%s]\n", __func__, #arg); \
+        m_assert (arg, PSTR("m_return_if_fail")); \
         return; \
     }
 #define m_return_val_if_fail(arg,val) \
     if (!(arg)) { \
-        fprintf (stderr, "Warning: function: %s; failed: [%s]\n", __func__, #arg); \
+        m_assert (arg, PSTR ("m_return_val_if_fail")); \
         return val; \
     }
 #else

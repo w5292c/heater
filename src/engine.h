@@ -50,5 +50,11 @@ void engine_request_state (muint8 aNewState);
  * Get the current time
  */
 const TRtcTimeInfo *engine_get_current_time (void);
+/**
+ * Panic the engine
+ * @param[in] aPanicInfo The string in the flash memory describing the panic reason
+ * @note This function does not exit, it suspends the CPU
+ */
+void engine_panic_p (const char *aPanicInfo);
 
 #endif /* __AVR_LCD_PROJECT_ENGINE_H__ */

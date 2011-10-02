@@ -16,7 +16,10 @@
 #ifdef M_AVR
 #include <string.h>
 #include <avr/io.h>
+#include <avr/wdt.h>
+#include <avr/sleep.h>
 #include <avr/pgmspace.h>
+#include <avr/interrupt.h>
 #endif /* M_AVR */
 
 static muint8 TheNote = 0;
@@ -229,4 +232,24 @@ static void engine_sound_finished (void) {
     }
 
     hw_sound_play_note (TheNote, 1000, &engine_sound_finished);
+}
+
+void engine_panic_p (const char *aPanicInfo) {
+    /* disable the interrupts and the watchdog timer */
+    cli ();
+    wdt_disable ();
+
+    /* show the panic info */
+    lcd_clear ();
+    if (aPanicInfo) {
+        lcd_paint_string_7x14_p (0, 0, aPanicInfo);
+    }
+    else {
+        lcd_paint_string_7x14_p (0, 0, PSTR("<null>"));
+    }
+    lcd_flash ();
+    /* put the CPU into the power-down mode, stop here */
+    set_sleep_mode (SLEEP_MODE_PWR_DOWN);
+    sleep_enable ();
+    sleep_cpu ();
 }
