@@ -60,9 +60,6 @@ static union {
     hw_rtc_time_written mWrFunc;
 } TheCallback;
 static muint8 TheBuffer[M_RTC_READ_BUFFER_LENGHT];
-static const muint8 TheRtcDataAddressStart[] M_FLASH = {
-    0x00
-};
 
 static void hw_rtc_i2c_read_done (mbool aSuccess, muint8 aBytesRead);
 static void hw_rtc_i2c_write_done (mbool aSuccess, muint8 aBytesWritten);
@@ -97,7 +94,7 @@ void hw_rtc_get_time (hw_rtc_time_ready aCallback) {
     m_return_if_fail (EHwRtcStateIdle == TheRtcState);
 
     TheCallback.mRdFunc = aCallback;
-    memcpy_P (TheBuffer, TheRtcDataAddressStart, 1);
+    TheBuffer[0] = 0;
 
     TheRtcState = EHwRtcStateRdWritingAddress;
     hw_i2c_write (M_RTC_ADDRESS, TheBuffer, 1, &hw_rtc_i2c_write_done);
@@ -109,10 +106,21 @@ void hw_rtc_set_time (const TRtcTimeInfo *aTime, hw_rtc_time_written aCallback) 
     m_return_if_fail (EHwRtcStateIdle == TheRtcState);
 
     TheCallback.mWrFunc = aCallback;
-    memcpy_P (TheBuffer, TheRtcDataAddressStart, 1);
+    /* Start address: 0x00 */
+    TheBuffer[0] = 0;
+    /* store the time to be set */
+    TheBuffer[1] = aTime->mSeconds; /**< Seconds */
+    TheBuffer[2] = aTime->mMinute;  /**< Minutes */
+    TheBuffer[3] = aTime->mHour;    /**< Hours */
+#if 0 /**! Yet to be implemented */
+    TheBuffer[4] = ; /**< Day */
+    TheBuffer[5] = ; /**< Date */
+    TheBuffer[6] = ; /**< Month */
+    TheBuffer[7] = ; /**< Year */
+#endif
 
     TheRtcState = EHwRtcStateWrWritingAddress;
-    hw_i2c_write (M_RTC_ADDRESS, TheBuffer, 1, &hw_rtc_i2c_write_done);
+    hw_i2c_write (M_RTC_ADDRESS, TheBuffer, 4, &hw_rtc_i2c_write_done);
 }
 
 static inline void hw_rtc_handle_i2c_rd_addr_written (mbool aSuccess, muint8 aBytesWritten) {
@@ -138,10 +146,9 @@ static inline void hw_rtc_handle_i2c_rd_addr_written (mbool aSuccess, muint8 aBy
 
 static inline void hw_rtc_handle_i2c_wr_addr_written (mbool aSuccess, muint8 aBytesWritten) {
     if (aSuccess && 1 == aBytesWritten) {
+        /**!todo Unused state: to be removed */
         TheRtcState = EHwRtcStateWrWritingData;
-        /** prepare TheBuffer for the write request */
-        hw_i2c_write (M_RTC_ADDRESS,
-            TheBuffer, M_RTC_READ_BUFFER_LENGHT, hw_rtc_i2c_write_done);
+        hw_rtc_i2c_write_done(TRUE, 4);
     }
     else {
         hw_rtc_time_written callback;
@@ -164,7 +171,7 @@ static inline void hw_rtc_handle_i2c_wr_data_written (mbool aSuccess, muint8 aBy
     TheCallback.mRdFunc = NULL;
     TheRtcState = EHwRtcStateIdle;
 
-    if (aSuccess && 7 == aBytesWritten) {
+    if (aSuccess && 4 == aBytesWritten) {
         /* notify the client */
         m_return_if_fail (callback);
         (*callback) (TRUE);
