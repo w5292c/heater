@@ -102,6 +102,9 @@ void hw_sound_play_note (muint8 aNote, muint16 aLength, hw_sound_finished aCallb
     m_return_if_fail ((octave >= 0 && octave < 5) || ((*aCallback) (), FALSE));
 
     base = pgm_read_word (&TheBase[note]);
+    while (octave--) {
+        base >>= 1;
+    }
     for (i = 0; i < 5; i++) {
         prescaler = pgm_read_word (&ThePreScalers[i]);
         count = base/(prescaler*2) - 1;
