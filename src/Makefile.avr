@@ -24,11 +24,11 @@ $(TARGET_FILENAME): $(TARGET_ELF)
 
 test: liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-rtc.o hw-i2c.o hw-timer.o \
 	  hw-keys.o state-idle.o state-alarm.o state-date.o editor.o hw-sound.o main-avr.c \
-	  state-set-time.o
+	  state-set-time.o alarm.o
 	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) main-avr.c -o test \
 		liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-rtc.o hw-i2c.o hw-timer.o \
 		hw-keys.o state-idle.o state-alarm.o state-date.o editor.o hw-sound.o \
-		state-set-time.o
+		state-set-time.o alarm.o
 	avr-objcopy --only-keep-debug $(TARGET_ELF) $(DEBUG_FILENAME)
 	#avr-strip $(TARGET_ELF)
 	avr-size -C --mcu=$(MCPU) $(TARGET_ELF)
@@ -77,6 +77,9 @@ state-set-time.o : state-set-time.h state-set-time.c
 
 editor.o: editor.c editor.h
 	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) editor.c -c -o editor.o
+
+alarm.o: alarm.h alarm.c
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) alarm.c -c -o alarm.o
 
 prg: $(TARGET_FILENAME)
 	jtagice -dATmega32 -e -iftest.hex -pf -vf -R

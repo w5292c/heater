@@ -1,5 +1,6 @@
 #include "engine.h"
 
+#include "alarm.h"
 #include "macros.h"
 #include "editor.h"
 #include "hw-rtc.h"
@@ -40,7 +41,6 @@ static void engine_rtc_timer (void);
 static void engine_on_key_event (muint8 aCode);
 static void engine_show_hello (void);
 static void engine_rtc_time_ready (const TRtcTimeInfo *aTimeInfo);
-static void engine_sound_finished (void);
 
 void engine_init (void) {
     scheduler_add (&engine_tick);
@@ -63,7 +63,8 @@ void engine_init (void) {
 
     /* Request initial state */
     engine_request_state (EEngineStateIdle);
-    engine_sound_finished ();
+
+    alarm_play_melody (EAlarmMelodyCTree, NULL);
 }
 
 void engine_deinit (void) {
@@ -190,30 +191,6 @@ static void engine_show_hello (void) {
         lcd_paint_string_5x8_p (42, 8, PSTR ("\200D\201"));
     }
     lcd_flash ();
-}
-
-static muint8 TheNoteIndex = 0;
-static muint16 TheNones[] M_FLASH = {
-    0x0440U, 0x0449U, 0x0449U, 0x0447U, 0x08FFU,
-    0x0449U, 0x0445U, 0x0440U, 0x0440U,
-    0x0440U, 0x0449U, 0x0449U, 0x0447U,
-    0x0452U, 0x0850U, 0x0450U, 0x0442U,
-    0x0442U, 0x044AU, 0x044AU, 0x0449U,
-    0x0447U, 0x0445U, 0x0440U, 0x0449U,
-    0x0449U, 0x0447U, 0x0449U, 0x0845U,
-    0xFFFFU
-};
-
-static void engine_sound_finished (void) {
-    const muint16 note = pgm_read_word (&TheNones[TheNoteIndex]);
-    if (0xFFFFU == note) {
-        /* the last note has been played, stop playing */
-        return;
-    }
-    const muint8 length = (note>>8)&0x0FFU;
-
-    hw_sound_play_note ((note & 0xFFU), length*125, &engine_sound_finished);
-    ++TheNoteIndex;
 }
 
 void engine_panic_p (const char *aPanicInfo) {
