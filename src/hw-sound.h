@@ -38,6 +38,7 @@ void hw_sound_deinit (void);
  * @param[in] aNote The Note and Octave information
  * @param[in] aLength The length of the note in msec
  * @param[in] aCallback The callback when the note is finished
+ * @note Special value for the 'aNote' 0xFFU means 'pause' for aLength ms
  */
 void hw_sound_play_note (muint8 aNote, muint16 aLength, hw_sound_finished aCallback);
 

@@ -96,59 +96,61 @@ void hw_sound_play_note (muint8 aNote, muint16 aLength, hw_sound_finished aCallb
     m_return_if_fail (aCallback);
     m_return_if_fail (EHwSoundStateIdle == TheSoundState || ((*aCallback) (), FALSE));
 
-    note = (aNote & 0x0FU);
-    m_return_if_fail (note <= 0x0B || ((*aCallback) (), FALSE));
-    octave = ((aNote>>4) & 0x0FU) - 4;
-    m_return_if_fail ((octave >= 0 && octave < 5) || ((*aCallback) (), FALSE));
+    if (0xFFU != aNote) {
+        note = (aNote & 0x0FU);
+        m_return_if_fail (note <= 0x0B || ((*aCallback) (), FALSE));
+        octave = ((aNote>>4) & 0x0FU) - 4;
+        m_return_if_fail ((octave >= 0 && octave < 5) || ((*aCallback) (), FALSE));
 
-    base = pgm_read_word (&TheBase[note]);
-    while (octave--) {
-        base >>= 1;
-    }
-    for (i = 0; i < 5; i++) {
-        prescaler = pgm_read_word (&ThePreScalers[i]);
-        count = base/(prescaler*2) - 1;
-        if (count > 0 && count < 0x100) {
-            break;
+        base = pgm_read_word (&TheBase[note]);
+        while (octave--) {
+            base >>= 1;
         }
+        for (i = 0; i < 5; i++) {
+            prescaler = pgm_read_word (&ThePreScalers[i]);
+            count = base/(prescaler*2) - 1;
+            if (count > 0 && count < 0x100) {
+                break;
+            }
+        }
+
+        /* now, 'count' and 'prescaler' have correct values */
+        m_return_if_fail ((count > 0 && count < 0x100) || ((*aCallback) (), FALSE));
+        m_return_if_fail ((
+            prescaler == 1 || prescaler == 8 ||
+            prescaler == 64 || prescaler == 256 ||
+            prescaler == 1024) || ((*aCallback) (), FALSE));
+
+        switch (prescaler)
+        {
+        case 1:
+            prescaler_ctrl = (0<<CS02)|(0<<CS01)|(1<<CS00);
+            break;
+        case 8:
+            prescaler_ctrl = (0<<CS02)|(1<<CS01)|(0<<CS00);
+            break;
+        case 64:
+            prescaler_ctrl = (0<<CS02)|(1<<CS01)|(1<<CS00);
+            break;
+        case 256:
+            prescaler_ctrl = (1<<CS02)|(0<<CS01)|(0<<CS00);
+            break;
+        case 1024:
+            prescaler_ctrl = (1<<CS02)|(0<<CS01)|(1<<CS00);
+            break;
+        default:
+            /* incorrect prescaler value */
+            m_return_if_fail ((FALSE && prescaler) || ((*aCallback) (), FALSE));
+        break;
+        }
+
+        TCNT0 = 0;
+        OCR0 = (muint8)count;
+        TCCR0 =
+            (1<<WGM01)|(0<<WGM00)| /*< Counter mode: CTC */
+            (0<<COM01)|(1<<COM00)| /*< Output mode: Toggle output */
+            prescaler_ctrl; /*< prescaler control value */
     }
-
-    /* now, 'count' and 'prescaler' have correct values */
-    m_return_if_fail ((count > 0 && count < 0x100) || ((*aCallback) (), FALSE));
-    m_return_if_fail ((
-        prescaler == 1 || prescaler == 8 ||
-        prescaler == 64 || prescaler == 256 ||
-        prescaler == 1024) || ((*aCallback) (), FALSE));
-
-    switch (prescaler)
-    {
-    case 1:
-        prescaler_ctrl = (0<<CS02)|(0<<CS01)|(1<<CS00);
-        break;
-    case 8:
-        prescaler_ctrl = (0<<CS02)|(1<<CS01)|(0<<CS00);
-        break;
-    case 64:
-        prescaler_ctrl = (0<<CS02)|(1<<CS01)|(1<<CS00);
-        break;
-    case 256:
-        prescaler_ctrl = (1<<CS02)|(0<<CS01)|(0<<CS00);
-        break;
-    case 1024:
-        prescaler_ctrl = (1<<CS02)|(0<<CS01)|(1<<CS00);
-        break;
-    default:
-        /* incorrect prescaler value */
-        m_return_if_fail ((FALSE && prescaler) || ((*aCallback) (), FALSE));
-        break;
-    }
-
-    TCNT0 = 0;
-    OCR0 = (muint8)count;
-    TCCR0 =
-        (1<<WGM01)|(0<<WGM00)| /*< Counter mode: CTC */
-        (0<<COM01)|(1<<COM00)| /*< Output mode: Toggle output */
-        prescaler_ctrl; /*< prescaler control value */
 
     TheSoundState = EHwSoundStatePlaying;
     TheNoteLength = aLength;
