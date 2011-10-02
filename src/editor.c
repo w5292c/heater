@@ -38,9 +38,7 @@ void editor_activate (TEditorFlags aFlags,
     m_return_if_fail (aCallback);
     m_return_if_fail (EEditorStateIdle == TheEditorState);
 
-    if (TheCallback) {
-        (*aCallback) (FALSE, NULL);
-    }
+    TheCallback = aCallback;
 
     if (aInitialInfo) {
         memcpy (&TheTimeInfo, aInitialInfo, sizeof (TRtcTimeInfo));
@@ -62,20 +60,21 @@ static void editor_update_screen (void) {
     lcd_paint_char_7x14 (14, 1, ':');
     lcd_paint_char_7x14 (21, 1, '0' + ((TheTimeInfo.mMinute>>4)&0x0FU));
     lcd_paint_char_7x14 (28, 1, '0' + ((TheTimeInfo.mMinute)&0x0FU));
+    lcd_paint_char_7x14 (40, 1, 'O');
+    lcd_paint_char_7x14 (47, 1, 'K');
     lcd_paint_char_7x14 (
         (0 == TheIndex) ? 0 :
         (1 == TheIndex) ? 7 :
-        (2 == TheIndex) ? 21 : 28, 3, '_');
+        (2 == TheIndex) ? 21 :
+        (3 == TheIndex) ? 28 : 40, 3, '_');
+    if (4 == TheIndex) {
+        lcd_paint_char_7x14 (47, 3, '_');
+    }
     lcd_flash ();
 }
 
 void editor_deactivate (void) {
-    if (TheCallback) {
-        (*TheCallback) (FALSE, NULL);
-
-        TheCallback = NULL;
-    }
-
+    TheCallback = NULL;
     TheEditorState = EEditorStateIdle;
 }
 
@@ -164,15 +163,24 @@ static void editor_dec_minute (mbool aHighPart) {
 
 static void editor_on_key_event (muint8 aCode) {
     if (EEditorStateActive == TheEditorState) {
-        if (EHwKeyCodeKey2 == aCode) {
+        if (EHwKeyCodeKey1 == aCode) {
+            if (EHwKeyCodeKey1 == aCode) {
+                // handle 'done'
+                if (TheCallback) {
+                    (*TheCallback)(TRUE, &TheTimeInfo);
+                }
+                TheEditorState = EEditorStateIdle;
+            }
+        }
+        else if (EHwKeyCodeKey2 == aCode) {
             TheIndex -= 1;
             if (TheIndex == 255) {
-                TheIndex = 3;
+                TheIndex = 4;
             }
         }
         else if (EHwKeyCodeKey3 == aCode) {
             TheIndex += 1;
-            if (TheIndex == 4) {
+            if (TheIndex == 5) {
                 TheIndex = 0;
             }
         }
