@@ -102,33 +102,28 @@ static void state_set_time_timer (void) {
 static void state_set_time_key_event (muint8 aCode) {
     if (EHwKeyCodeKey1 == aCode) {
         if (ESetTimeStateIntro == TheSetTimeState) {
-            engine_request_state (EEngineStateAlarm);
-        }
-        else if (ESetTimeStateEditor == TheSetTimeState) {
-            editor_deactivate ();
             engine_request_state (EEngineStateIdle);
         }
     }
+
     TheSetTimeInactivityTimer = 0;
 }
 
 static void state_set_time_time_updated (mbool aSuccess) {
-    M_UNUSED_PARAM (aSuccess);
-    TheSetTimeState = ESetTimeStateLeaving;
-
-    editor_deactivate ();
+    m_assert (aSuccess, PSTR("No update"));
     engine_request_state (EEngineStateIdle);
 }
 
 static void state_set_time_editor_done (mbool aConfirmed, TRtcTimeInfo *aInfo) {
     m_return_if_fail (aInfo);
+    editor_deactivate ();
     if (aConfirmed) {
         const TRtcTimeInfo *currentTime = engine_get_current_time ();
         m_return_if_fail (currentTime);
-
-        TRtcTimeInfo time = *currentTime;
-        time.mHour = aInfo->mHour;
-        time.mMinute = aInfo->mMinute;
-        hw_rtc_set_time (&time, &state_set_time_time_updated);
+        TRtcTimeInfo newTime = *currentTime;
+        newTime.mSeconds = 0;
+        newTime.mHour = aInfo->mHour;
+        newTime.mMinute = aInfo->mMinute;
+        hw_rtc_set_time (&newTime, &state_set_time_time_updated);
     }
 }
