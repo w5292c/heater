@@ -22,7 +22,6 @@
 #include <avr/interrupt.h>
 #endif /* M_AVR */
 
-static muint8 TheNote = 0;
 static muint8 TheCurrentState = EEngineStateNull;
 static TEngineStateInterface TheStates[EEngineStateLast] = {{NULL,NULL,NULL,NULL,NULL,NULL},};
 static TRtcTimeInfo TheCurrentTime = {0,0,0,0,0,0,0};
@@ -64,8 +63,7 @@ void engine_init (void) {
 
     /* Request initial state */
     engine_request_state (EEngineStateIdle);
-    TheNote = 0x40;
-    hw_sound_play_note (TheNote, 1000, &engine_sound_finished);
+    engine_sound_finished ();
 }
 
 void engine_deinit (void) {
@@ -194,44 +192,28 @@ static void engine_show_hello (void) {
     lcd_flash ();
 }
 
-static void engine_sound_finished (void) {
-    switch (TheNote)
-    {
-    case 0x40:
-        TheNote = 0x42;
-        break;
-    case 0x41:
-        break;
-    case 0x42:
-        TheNote = 0x44;
-        break;
-    case 0x43:
-        break;
-        break;
-    case 0x44:
-        TheNote = 0x45;
-        break;
-    case 0x45:
-        TheNote = 0x47;
-        break;
-    case 0x46:
-        break;
-    case 0x47:
-        TheNote = 0x49;
-        break;
-    case 0x48:
-        break;
-    case 0x49:
-        TheNote = 0x4B;
-        break;
-    case 0x4A:
-        break;
-    case 0x4B:
-        TheNote = 0x40;
-        break;
-    }
+static muint8 TheNoteIndex = 0;
+static muint16 TheNones[] M_FLASH = {
+    0x0440U, 0x0449U, 0x0449U, 0x0447U, 0x08FFU,
+    0x0449U, 0x0445U, 0x0440U, 0x0440U,
+    0x0440U, 0x0449U, 0x0449U, 0x0447U,
+    0x0452U, 0x0850U, 0x0450U, 0x0442U,
+    0x0442U, 0x044AU, 0x044AU, 0x0449U,
+    0x0447U, 0x0445U, 0x0440U, 0x0449U,
+    0x0449U, 0x0447U, 0x0449U, 0x0845U,
+    0xFFFFU
+};
 
-    hw_sound_play_note (TheNote, 1000, &engine_sound_finished);
+static void engine_sound_finished (void) {
+    const muint16 note = pgm_read_word (&TheNones[TheNoteIndex]);
+    if (0xFFFFU == note) {
+        /* the last note has been played, stop playing */
+        return;
+    }
+    const muint8 length = (note>>8)&0x0FFU;
+
+    hw_sound_play_note ((note & 0xFFU), length*125, &engine_sound_finished);
+    ++TheNoteIndex;
 }
 
 void engine_panic_p (const char *aPanicInfo) {
