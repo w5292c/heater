@@ -37,8 +37,7 @@ typedef enum {
     EHwRtcStateRdWritingAddress,
     EHwRtcStateRdReadingData,
     /* write states */
-    EHwRtcStateWrWritingAddress,
-    EHwRtcStateWrWritingData,
+    EHwRtcStateWrWriting,
 } THwRtcState;
 
 /**
@@ -119,7 +118,7 @@ void hw_rtc_set_time (const TRtcTimeInfo *aTime, hw_rtc_time_written aCallback) 
     TheBuffer[7] = ; /**< Year */
 #endif
 
-    TheRtcState = EHwRtcStateWrWritingAddress;
+    TheRtcState = EHwRtcStateWrWriting;
     hw_i2c_write (M_RTC_ADDRESS, TheBuffer, 4, &hw_rtc_i2c_write_done);
 }
 
@@ -141,26 +140,6 @@ static inline void hw_rtc_handle_i2c_rd_addr_written (mbool aSuccess, muint8 aBy
 
         /* notify the client */
         (*callback) (NULL);
-    }
-}
-
-static inline void hw_rtc_handle_i2c_wr_addr_written (mbool aSuccess, muint8 aBytesWritten) {
-    if (aSuccess && 1 == aBytesWritten) {
-        /**!todo Unused state: to be removed */
-        TheRtcState = EHwRtcStateWrWritingData;
-        hw_rtc_i2c_write_done(TRUE, 4);
-    }
-    else {
-        hw_rtc_time_written callback;
-
-        /* error happened, reset the state */
-        callback = TheCallback.mWrFunc;
-        TheCallback.mRdFunc = NULL;
-        TheRtcState = EHwRtcStateIdle;
-
-        /* notify the client */
-        m_return_if_fail (callback);
-        (*callback) (FALSE);
     }
 }
 
@@ -189,10 +168,7 @@ static void hw_rtc_i2c_write_done (mbool aSuccess, muint8 aBytesWritten) {
     case EHwRtcStateRdWritingAddress:
         hw_rtc_handle_i2c_rd_addr_written (aSuccess, aBytesWritten);
         break;
-    case EHwRtcStateWrWritingAddress:
-        hw_rtc_handle_i2c_wr_addr_written (aSuccess, aBytesWritten);
-        break;
-    case EHwRtcStateWrWritingData:
+    case EHwRtcStateWrWriting:
         hw_rtc_handle_i2c_wr_data_written (aSuccess, aBytesWritten);
         break;
     case EHwRtcStateRdReadingData:
@@ -241,8 +217,7 @@ static void hw_rtc_i2c_read_done (mbool aSuccess, muint8 aBytesRead) {
     case EHwRtcStateRdReadingData:
         hw_rtc_handle_i2c_rd_data_ready (aSuccess, aBytesRead);
         break;
-    case EHwRtcStateWrWritingAddress:
-    case EHwRtcStateWrWritingData:
+    case EHwRtcStateWrWriting:
     case EHwRtcStateRdWritingAddress:
     case EHwRtcStateNull:
     case EHwRtcStateIdle:
