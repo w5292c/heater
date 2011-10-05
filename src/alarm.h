@@ -7,7 +7,8 @@ typedef void (*alarm_play_melody_done)(mbool aSuccess);
 
 typedef enum {
     EAlarmMelodyNone,
-    EAlarmMelodyCTree
+    EAlarmMelodyCTree,
+    EAlarmMelodyHare
 } TAlarmMelody;
 
 /**
