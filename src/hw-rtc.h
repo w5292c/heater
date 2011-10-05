@@ -34,10 +34,12 @@ typedef void (*hw_rtc_timer) (void);
  * Initialize the RTC system
  */
 void hw_rtc_init (void);
+#ifndef M_NO_DEINIT
 /**
  * Deinitialize the RTC system
  */
 void hw_rtc_deinit (void);
+#endif /* !M_NO_DEINIT */
 
 /**
  * Start request to get time information

@@ -71,9 +71,11 @@ void hw_i2c_init (void) {
     PORTC |= (muint8)((1<<PC0) | (1<<PC1));
 }
 
+#ifndef M_NO_DEINIT
 void hw_i2c_deinit (void) {
     scheduler_remove (&hw_i2c_sched_tick);
 }
+#endif /* !M_NO_DEINIT */
 
 void hw_i2c_read (muint8 aAddr, muint8 *aBuff, muint8 aSize, hw_i2c_read_done aCallback) {
     m_return_if_fail (aCallback);

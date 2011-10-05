@@ -51,10 +51,12 @@ void hw_timer_init (void) {
     hw_timer_init_timer2 ();
 }
 
+#ifndef M_NO_DEINIT
 void hw_timer_deinit (void) {
     scheduler_remove (&hw_timer_tick);
     TheTimerTickPending = FALSE;
 }
+#endif /* !M_NO_DEINIT */
 
 void hw_timer_add_callback (hw_timer_callback aCallback) {
     muint i;

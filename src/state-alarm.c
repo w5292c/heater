@@ -47,9 +47,11 @@ void engine_state_alarm_init (void) {
     engine_register_state (EEngineStateAlarm, &alarm_api);
 }
 
+#ifndef M_NO_DEINIT
 void engine_state_alarm_deinit (void) {
     TheAlarmState = EAlarmStateNull;
 }
+#endif /* !M_NO_DEINIT */
 
 static void state_alarm_enter (void) {
     TheAlarmState = EAlarmStateIntro;

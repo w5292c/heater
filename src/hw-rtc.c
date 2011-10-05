@@ -80,6 +80,7 @@ void hw_rtc_init (void) {
     GICR |= (muint8)(1<<INT1);
 }
 
+#ifndef M_NO_DEINIT
 void hw_rtc_deinit (void) {
     hw_i2c_deinit ();
 
@@ -87,6 +88,7 @@ void hw_rtc_deinit (void) {
     TheCallback.mRdFunc = NULL;
     TheRtcState = EHwRtcStateCancel;
 }
+#endif /* !M_NO_DEINIT */
 
 void hw_rtc_get_time (hw_rtc_time_ready aCallback) {
     m_return_if_fail (aCallback);

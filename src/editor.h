@@ -16,7 +16,9 @@ typedef enum {
 } TEditorFlags;
 
 void editor_init (void);
+#ifndef M_NO_DEINIT
 void editor_deinit (void);
+#endif /* !M_NO_DEINIT */
 
 void editor_activate (TEditorFlags aFlags, editor_done aCallback, const TRtcTimeInfo *aInitialInfo);
 void editor_deactivate (void);

@@ -34,10 +34,12 @@ typedef struct {
  * Initialize the engine
  */
 void engine_init (void);
+#ifndef M_NO_DEINIT
 /**
  * Deinitialize the engine
  */
 void engine_deinit (void);
+#endif /* !M_NO_DEINIT */
 /**
  * Register anoter state
  */

@@ -4,7 +4,9 @@
 #include "types.h"
 
 void lcd_init (void);
+#ifndef M_NO_DEINIT
 void lcd_deinit (void);
+#endif /* !M_NO_DEINIT */
 
 void lcd_flash (void);
 void lcd_clear (void);

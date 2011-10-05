@@ -18,10 +18,12 @@ void scheduler_init (void);
  * Start the scheduler
  */
 void scheduler_start (void);
+#ifndef M_NO_DEINIT
 /**
  * Send request to stop the scheduler
  */
 void scheduler_stop (void);
+#endif /* !M_NO_DEINIT */
 /**
  * Add another item to the scheduler
  * @param[in] aTick The tick function

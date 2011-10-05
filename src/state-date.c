@@ -60,9 +60,11 @@ void engine_state_date_init (void) {
     engine_register_state (EEngineStateDate, &alarm_api);
 }
 
+#ifndef M_NO_DEINIT
 void engine_state_date_deinit (void) {
     TheDateState = EDateStateNull;
 }
+#endif /* !M_NO_DEINIT */
 
 static void state_date_enter (void) {
     TheDateState = EDateStateIntro;

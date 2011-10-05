@@ -18,9 +18,11 @@ void hw_keys_init (void) {
     hw_timer_add_callback (&hw_keys_timer_callback);
 }
 
+#ifndef M_NO_DEINIT
 void hw_keys_deinit (void) {
     hw_timer_remove_callback (&hw_keys_timer_callback);
 }
+#endif /* !M_NO_DEINIT */
 
 void hw_keys_add_key_event_handler (hw_keys_on_key_event aCallback) {
     muint8 i;

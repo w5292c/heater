@@ -114,8 +114,10 @@ void lcd_init (void) {
     lcd_set_address (0);
 }
 
+#ifndef M_NO_DEINIT
 void lcd_deinit (void) {
 }
+#endif /* !M_NO_DEINIT */
 
 void lcd_flash (void) {
     muint8 i;

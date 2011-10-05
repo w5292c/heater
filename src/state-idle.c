@@ -23,8 +23,10 @@ void engine_state_idle_init (void) {
     engine_register_state (EEngineStateIdle, &idle_api);
 }
 
+#ifndef M_NO_DEINIT
 void engine_state_idle_deinit (void) {
 }
+#endif /* !M_NO_DEINIT */
 
 static void state_idle_enter (void) {
     state_idle_rtc_timer ();

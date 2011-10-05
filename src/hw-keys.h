@@ -34,10 +34,12 @@ typedef void (*hw_keys_on_key_event) (muint8 aCode);
  * Initialize the keyboard system
  */
 void hw_keys_init (void);
+#ifndef M_NO_DEINIT
 /**
  * Deinitialize the keyboard system
  */
 void hw_keys_deinit (void);
+#endif /* !M_NO_DEINIT */
 /**
  * Add a callback for a key event
  */

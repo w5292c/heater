@@ -47,9 +47,11 @@ void engine_state_set_time_init (void) {
     engine_register_state (EEngineStateTimeSet, &set_time_api);
 }
 
+#ifndef M_NO_DEINIT
 void engine_state_set_time_deinit (void) {
     TheSetTimeState = ESetTimeStateNull;
 }
+#endif /* !M_NO_DEINIT */
 
 static void state_set_time_enter (void) {
     TheSetTimeState = ESetTimeStateIntro;

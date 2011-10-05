@@ -2,7 +2,7 @@ MCPU=atmega32
 JTAG_PORT=`ls /dev/ttyUSB*`
 
 MCFLAGS=-DF_CPU=16000000UL -DM_AVR -O0 -Wall -Werror -Wextra -g -W -pedantic \
-	-Wstrict-prototypes -Wundef -std=gnu99
+	-Wstrict-prototypes -Wundef -std=gnu99 -DM_NO_DEINIT
 
 TARGET_FORMAT=ihex
 #TARGET_FORMAT=binary

@@ -20,10 +20,12 @@ typedef void (*hw_i2c_write_done) (mbool aSuccess, muint8 aBytesWritten);
  * Initialize the I2C system
  */
 void hw_i2c_init (void);
+#ifndef M_NO_DEINIT
 /**
  * Deinitialize the I2C system
  */
 void hw_i2c_deinit (void);
+#endif /* !M_NO_DEINIT */
 /**
  * Start the read request
  * @param[in] aAddr The address of the I2C client to be read

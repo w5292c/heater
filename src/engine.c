@@ -69,6 +69,7 @@ void engine_init (void) {
 #endif
 }
 
+#ifndef M_NO_DEINIT
 void engine_deinit (void) {
     /* first deinitialize the states */
     engine_state_set_time_deinit ();
@@ -89,6 +90,7 @@ void engine_deinit (void) {
     /* deinitialize the LCD interface */
     lcd_deinit ();
 }
+#endif /* !M_NO_DEINIT */
 
 void engine_register_state (muint8 aEngineState, TEngineStateInterface *aInterface) {
     m_return_if_fail (aEngineState < EEngineStateLast);

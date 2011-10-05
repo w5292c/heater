@@ -45,10 +45,12 @@ void hw_sound_init (void) {
     TheSoundState = EHwSoundStateIdle;
 }
 
+#ifndef M_NO_DEINIT
 void hw_sound_deinit (void) {
     hw_timer_remove_callback (&hw_sound_timer_callback);
     TheSoundState = EHwSoundStateNull;
 }
+#endif /* !M_NO_DEINIT */
 
 /**
  * Play a note:

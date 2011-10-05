@@ -27,9 +27,11 @@ void editor_init (void) {
     hw_keys_add_key_event_handler (&editor_on_key_event);
 }
 
+#ifndef M_NO_DEINIT
 void editor_deinit (void) {
     hw_keys_remove_key_event_handler (&editor_on_key_event);
 }
+#endif /* !M_NO_DEINIT */
 
 void editor_activate (TEditorFlags aFlags,
     editor_done aCallback, const TRtcTimeInfo *aInitialInfo) {

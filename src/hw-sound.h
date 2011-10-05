@@ -12,10 +12,12 @@ typedef void (*hw_sound_finished) (void);
  * Initialize the sound hardware
  */
 void hw_sound_init (void);
+#ifndef M_NO_DEINIT
 /**
  * Deinitialize the sound hardware
  */
 void hw_sound_deinit (void);
+#endif /* !M_NO_DEINIT */
 
 /**
  * Play a note:

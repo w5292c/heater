@@ -37,9 +37,11 @@ void scheduler_start (void) {
     }
 }
 
+#ifndef M_NO_DEINIT
 void scheduler_stop (void) {
     TheExitRequest = TRUE;
 }
+#endif /* !M_NO_DEINIT */
 
 void scheduler_add (scheduler_tick aTick) {
     muint i;
