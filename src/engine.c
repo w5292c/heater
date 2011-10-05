@@ -64,7 +64,9 @@ void engine_init (void) {
     /* Request initial state */
     engine_request_state (EEngineStateIdle);
 
+#if 0 /* do not play a melody at start-up, can be enabled for testing */
     alarm_play_melody (EAlarmMelodyCTree, NULL);
+#endif
 }
 
 void engine_deinit (void) {
