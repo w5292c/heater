@@ -4,7 +4,6 @@
 #include "macros.h"
 #include "editor.h"
 #include "hw-rtc.h"
-#include "hw-uart.h"
 #include "hw-keys.h"
 #include "hw-timer.h"
 #include "hw-sound.h"
@@ -13,6 +12,7 @@
 #include "state-idle.h"
 #include "state-date.h"
 #include "state-alarm.h"
+#include "at-cmd-engine.h"
 #include "state-set-time.h"
 
 #ifdef M_AVR
@@ -55,7 +55,7 @@ void engine_init (void) {
     engine_show_hello ();
     editor_init ();
     hw_sound_init ();
-    uart_init ();
+    at_engine_init ();
 
     /* the last thing, initialize the states */
     engine_state_idle_init ();
@@ -79,7 +79,7 @@ void engine_deinit (void) {
     engine_state_date_deinit ();
     engine_state_idle_deinit ();
 
-    uart_deinit ();
+    at_engine_deinit ();
     hw_sound_deinit ();
     editor_deinit ();
     hw_keys_deinit ();

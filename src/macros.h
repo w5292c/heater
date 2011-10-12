@@ -3,7 +3,7 @@
 
 #include "engine.h"
 
-#define m_assert(arg, desc) if (!arg) engine_panic_p (desc);
+#define m_assert(arg, desc) arg || (engine_panic_p (desc),1);
 
 #ifdef M_DEBUG_LOGGING
 #ifdef M_PC

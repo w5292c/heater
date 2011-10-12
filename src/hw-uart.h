@@ -21,6 +21,7 @@ void uart_deinit (void);
 
 typedef enum {
     EUartStatusSuccess,
+    EUartStatusPartial,
     EUartStatusBusy,
     EUartStatusFailed
 } TUartStatus;
@@ -30,10 +31,13 @@ typedef enum {
  * @param[in] aStatus The success status of the UART read operation
  * @param[in] aData The read data
  * @param[in] aCount The number of bytes read from the UART interface
+ * @note The callback is invoked in the interrupt context!
  */
 typedef void (*uart_reader) (TUartStatus aStatus, const muint8 *aData, muint aCount);
 /**
  * UART writer callback
+ * @param[in] aStatus The status of the corresponding write operation
+ * @note The callback is invoked in the interrupt context!
  */
 typedef void (*uart_writer) (TUartStatus aStatus);
 
