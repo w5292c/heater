@@ -33,6 +33,13 @@ $(TOP_DIR)/include/autoconf.mk: $(TOP_DIR)/include/config.h
 		sed -n -f tools/scripts/define2mk.sed > $@.tmp && \
 	mv $@.tmp $@
 
+
+LIBS := src/core/core.a
+LIBS += src/drivers/devices.a
+LIBS := $(addprefix $(obj),$(LIBS))
+
+echo "Libs: $LIBS"
+
 TARGET_FORMAT=ihex
 #TARGET_FORMAT=binary
 
