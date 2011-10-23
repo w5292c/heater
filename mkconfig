@@ -1,0 +1,101 @@
+#!/bin/sh -e
+
+# Script to create header files and links to configure
+# U-Boot for a specific board.
+#
+# Parameters:  Target  Architecture  CPU  Board [VENDOR] [SOC]
+#
+# (C) 2002-2006 DENX Software Engineering, Wolfgang Denk <wd@denx.de>
+#
+
+echo "Trying...."
+
+VARIANT_NAME=""	# Name to print in make output
+TARGETS=""
+
+arch=""
+cpu=""
+board=""
+vendor=""
+soc=""
+
+if [ \( $# -eq 2 \) -a \( "$1" = "-A" \) ] ; then
+	# Automatic mode
+	line=`egrep -i "^[[:space:]]*${2}[[:space:]]" variants.cfg` || {
+		echo "mkconfig: *** No rule to make target \`$2_config'.  Stop." >&2
+		exit 1
+	}
+
+	set ${line}
+	# add default board name if needed
+	[ $# = 3 ] && set ${line} ${1}
+fi
+
+while [ $# -gt 0 ] ; do
+	case "$1" in
+	--) shift ; break ;;
+	-n) shift ; VARIANT_NAME="${1%_config}" ; shift ;;
+	-t) shift ; TARGETS="`echo $1 | sed 's:_: :g'` ${TARGETS}" ; shift ;;
+	*)  break ;;
+	esac
+done
+
+[ $# -lt 4 ] && echo "Exit 1" && exit 1
+[ $# -gt 6 ] && echo "Exit 2" && exit 1
+
+CONFIG_NAME="${1%_config}"
+
+[ "${VARIANT_NAME}" ] || VARIANT_NAME="${CONFIG_NAME}"
+
+arch="$2"
+cpu="$3"
+if [ "$4" = "-" ] ; then
+	board=${VARIANT_NAME}
+else
+	board="$4"
+fi
+[ $# -gt 4 ] && [ "$5" != "-" ] && vendor="$5"
+[ $# -gt 5 ] && [ "$6" != "-" ] && soc="$6"
+
+if [ "${ARCH}" -a "${ARCH}" != "${arch}" ]; then
+	echo "Failed: \$ARCH=${ARCH}, should be '${arch}' for ${VARIANT_NAME}" 1>&2
+	exit 1
+fi
+
+echo "Configuring for ${VARIANT_NAME} variant..."
+
+cd include/
+#
+# Create include file for Make
+#
+echo "ARCH   = ${arch}"  >  config.mk
+echo "CPU    = ${cpu}"   >> config.mk
+echo "BOARD  = ${board}" >> config.mk
+
+[ "${vendor}" ] && echo "VENDOR = ${vendor}" >> config.mk
+
+[ "${soc}"    ] && echo "SOC    = ${soc}"    >> config.mk
+
+# Assign board directory to BOARDIR variable
+if [ -z "${vendor}" ] ; then
+    BOARDDIR=${board}
+else
+    BOARDDIR=${vendor}/${board}
+fi
+
+#
+# Create board specific header file
+#
+> config.h		# Create new config file
+echo "/* Automatically generated - do not edit */" >>config.h
+
+for i in ${TARGETS} ; do
+	echo "#define CONFIG_MK_${i} 1" >>config.h ;
+done
+
+cat << EOF >> config.h
+#include <config_defaults.h>
+#include <configs/${CONFIG_NAME}.h>
+EOF
+
+exit 0

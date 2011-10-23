@@ -1,0 +1,136 @@
+MCPU=atmega32
+JTAG_PORT=`ls /dev/ttyUSB*`
+TOP_DIR=$(shell pwd)
+MKCONFIG=$(TOP_DIR)/mkconfig
+MCFLAGS=-DF_CPU=16000000UL -DM_AVR -O0 -Wall -Werror -Wextra -g -W -pedantic \
+	-Wstrict-prototypes -Wundef -std=gnu99 -DM_NO_DEINIT -I$(TOP_DIR)/include
+
+all: $(TOP_DIR)/include/autoconf.mk
+	echo "First target: $(TOP_DIR)"
+
+unconfig:
+	@echo "Unconfiguring..."
+	@rm include/autoconf.mk 2>/dev/null || true
+	@rm include/config.mk 2>/dev/null || true
+	@rm include/config.h 2>/dev/null || true
+	@echo "done."
+
+%_config:: unconfig
+	@echo "Trying to configure for '$(@:_config=)'"
+	$(MKCONFIG) -A $(@:_config=)
+
+# include $(TOP_DIR)/include/config.mk
+
+$(TOP_DIR)/include/config.h:
+	$(TOP_DIR)/mkconfig heater
+
+
+$(TOP_DIR)/include/autoconf.mk: $(TOP_DIR)/include/config.h
+	@echo Generating $@ ; \
+	set -e ; \
+	: Extract the config macros ; \
+	$(CPP) $(CFLAGS) $(MCFLAGS) -DDO_DEPS_ONLY -dM include/config.h | \
+		sed -n -f tools/scripts/define2mk.sed > $@.tmp && \
+	mv $@.tmp $@
+
+TARGET_FORMAT=ihex
+#TARGET_FORMAT=binary
+
+TARGET_ELF=test
+ifeq "$(TARGET_FORMAT)" "ihex"
+TARGET_EXT=hex
+else
+TARGET_EXT=bin
+endif
+TARGET_FILENAME=$(TARGET_ELF).$(TARGET_EXT)
+DEBUG_EXT=.dbg
+DEBUG_FILENAME=$(TARGET_ELF)$(DEBUG_EXT)
+
+$(TARGET_FILENAME): $(TARGET_ELF)
+	avr-objcopy -O $(TARGET_FORMAT) $(TARGET_ELF) $(TARGET_FILENAME)
+
+test: liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-rtc.o hw-i2c.o hw-timer.o \
+	  hw-keys.o state-idle.o state-alarm.o state-date.o editor.o hw-sound.o main-avr.c \
+	  state-set-time.o alarm.o hw-uart.o at-cmd-engine.o fuses.o
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) main-avr.c -o test \
+		liblcd.o lcd-driver.o hw-iface.o scheduler.o engine.o hw-rtc.o hw-i2c.o hw-timer.o \
+		hw-keys.o state-idle.o state-alarm.o state-date.o editor.o hw-sound.o \
+		state-set-time.o alarm.o hw-uart.o at-cmd-engine.o fuses.o
+	avr-objcopy --only-keep-debug $(TARGET_ELF) $(DEBUG_FILENAME)
+	#avr-strip $(TARGET_ELF)
+	avr-size -C --mcu=$(MCPU) $(TARGET_ELF)
+
+liblcd.o: config.h fonts.h macros.h types.h fonts.c
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) fonts.c -c -o liblcd.o
+
+lcd-driver.o: lcd-driver.c lcd-driver.h
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) lcd-driver.c -c -o lcd-driver.o
+
+hw-iface.o: hw-iface.c hw-iface.h
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) hw-iface.c -c -o hw-iface.o
+
+scheduler.o: scheduler.c scheduler.h
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) scheduler.c -c -o scheduler.o
+
+engine.o: engine.c engine.h
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) engine.c -c -o engine.o
+
+hw-rtc.o: hw-rtc.c hw-rtc.h
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) hw-rtc.c -c -o hw-rtc.o
+
+hw-i2c.o: hw-i2c.c hw-i2c.h
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) hw-i2c.c -c -o hw-i2c.o
+
+hw-timer.o: hw-timer.c hw-timer.h
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) hw-timer.c -c -o hw-timer.o
+
+hw-keys.o: hw-keys.c hw-keys.h
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) hw-keys.c -c -o hw-keys.o
+
+hw-sound.o: hw-sound.c hw-sound.h
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) hw-sound.c -c -o hw-sound.o
+
+state-idle.o: state-idle.c state-idle.h
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) state-idle.c -c -o state-idle.o
+
+state-alarm.o: state-alarm.c state-alarm.h
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) state-alarm.c -c -o state-alarm.o
+
+state-date.o: state-date.c state-date.h
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) state-date.c -c -o state-date.o
+
+state-set-time.o : state-set-time.h state-set-time.c
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) state-set-time.c -c -o state-set-time.o
+
+editor.o: editor.c editor.h
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) editor.c -c -o editor.o
+
+alarm.o: alarm.h alarm.c
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) alarm.c -c -o alarm.o
+
+hw-uart.o: hw-uart.h hw-uart.c
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) hw-uart.c -c -o hw-uart.o
+
+at-cmd-engine.o: at-cmd-engine.h at-cmd-engine.c
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) at-cmd-engine.c -c -o at-cmd-engine.o
+
+fuses.o: fuses.c
+	avr-gcc $(MCFLAGS) -mmcu=$(MCPU) fuses.c -c -o fuses.o
+
+prg: $(TARGET_FILENAME)
+	jtagice -dATmega32 -e -iftest.hex -pf -vf -R
+
+prg-2: $(TARGET_FILENAME)
+	avarice --part $(MCPU) --jtag $(JTAG_PORT) --erase --program --verify --file $(TARGET_FILENAME)
+
+clean:
+	rm *.o $(TARGET_ELF) $(TARGET_FILENAME) $(DEBUG_FILENAME) >/dev/null 2>&1 || true
+
+clean-source:
+	rm *~ >/dev/null 2>&1 || true
+
+t:  $(TARGET_FILENAME)
+	C:\APPS\WinAVR\bin\avarice --part $(MCPU) --jtag /dev/ttyS4 --erase --program --verify --file $(TARGET_FILENAME)
+
+prog: $(TARGET_FILENAME)
+	avrdude -P /dev/ttyUSB0 -p $(MCPU) -U $(TARGET_FILENAME)
