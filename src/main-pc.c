@@ -35,7 +35,7 @@ int main (int argn, char **argv) {
     lcd_init ();
     lcd_clear ();
 
-    lcd_paint_string_p (7, 1, PSTR ("Hello!"));
+    lcd_paint_string_5x8_p(7, 1, PSTR ("Hello!"));
     lcd_set_pixel ( 0,  0, TRUE);
     lcd_set_pixel ( 0, 15, TRUE);
     lcd_set_pixel (60,  0, TRUE);
